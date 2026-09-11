@@ -1,147 +1,188 @@
-document.addEventListener("DOMContentLoaded", ()=>{ try{AOS.init();}catch(e){} });
+document.addEventListener("DOMContentLoaded", ()=>{
+  try{ AOS.init({ duration: 800, once: false, offset: 50 }); }catch(e){}
+  try{ particlesJS("particles-js",{particles:{number:{value:80},color:{value:["#00e5ff","#7b61ff"]},shape:{type:"circle"},opacity:{value:0.5,random:true},size:{value:3,random:true},line_linked:{enable:true,distance:150,color:"#ffffff",opacity:0.15,width:1},move:{enable:true,speed:1.2,random:true}}}); }catch(e){}
+  iniciarTimer();
+});
 const WHATSAPP_NUM="5517997474065";
+let valorProjeto=160, etapaAtual=1, roiChart=null, logoBase64=null, notificacaoAtual=null, todosSelecionados=false;
+let descontoAtivo=true;
 const TABELA_PRECOS={"Clientes e CRM":20,"Estoque e Produtos":20,"Financeiro Completo":30,"Caixa PDV":20,"Ordens de Servico":20,"WhatsApp Automatico":30,"Agendamento":15,"Dashboard e Relatorios":20,"App Android":40,"App iOS":40,"Multi-empresas":30,"Nota Fiscal NFe":30,"Delivery e iFood":25,"Comissoes":10,"Contratos":10,"Chat Interno":10,"Assinatura Digital":15,"Fidelidade Cashback":15,"Catalogo Online":15,"Backup Automatico":10};
-let valorProjeto=160, roiChart=null, todosSelecionados=false;
+function getPrecoModulo(nome){ return TABELA_PRECOS[nome]!== undefined? TABELA_PRECOS[nome] : 15; }
+function carregarLogoPDF(){ const img=new Image(); img.crossOrigin="anonymous"; img.src='./assets/logo.png'; img.onload=function(){ const c=document.createElement('canvas'); c.width=img.width; c.height=img.height; c.getContext('2d').drawImage(img,0,0); logoBase64=c.toDataURL('image/png'); }; }
+carregarLogoPDF();
+const themeToggle=document.getElementById("themeToggle");
+function aplicarTema(t){ document.documentElement.setAttribute("data-theme",t); localStorage.setItem("theme",t); if(themeToggle) themeToggle.innerHTML=t==="light"?'<i class="fa-solid fa-moon"></i>':'<i class="fa-solid fa-sun"></i>'; }
+if(themeToggle) themeToggle.addEventListener("click",()=>{ const a=document.documentElement.getAttribute("data-theme")||"dark"; aplicarTema(a==="light"?"dark":"light"); });
+aplicarTema(localStorage.getItem("theme")||"dark");
+function nextEtapa(n){ document.querySelectorAll(".etapa").forEach(e=>e.classList.remove("active")); document.getElementById("etapa"+n).classList.add("active"); etapaAtual=n; document.getElementById("progress").style.width=(n*33.3)+"%"; window.scrollTo({top:document.getElementById("simulador").offsetTop-80,behavior:"smooth"}); }
+function reiniciarSimulacao(){ document.querySelectorAll(".modulo").forEach(m=>m.checked=false); document.getElementById("descricao").value=""; document.getElementById("negocio").selectedIndex=0; document.getElementById("usuarios").selectedIndex=0; document.getElementById("leadNome").value=""; document.getElementById("leadEmpresa").value=""; document.getElementById("leadWhatsapp").value=""; document.getElementById("leadEmail").value=""; document.getElementById("leadCidade").value=""; document.getElementById("ia-result").style.display="none"; todosSelecionados=false; calcular(); nextEtapa(1); }
+function selecionarTodos(){ todosSelecionados=!todosSelecionados; document.querySelectorAll(".modulo").forEach(m=>m.checked=todosSelecionados); const btn=document.querySelector(".btn-selecionar-todos"); if(btn) btn.innerHTML=todosSelecionados?'<i class="fa-solid fa-xmark"></i> Desmarcar Todos':'<i class="fa-solid fa-layer-group"></i> Selecionar Todos - <span>Mais completo, porem maior investimento</span>'; calcular(); }
 
-const MODULOS_DEFS=[
- {nome:"Clientes e CRM", peso:2, termos:["cliente","paciente","aluno","contato","crm","ficha","cadastro"]},
- {nome:"Estoque e Produtos", peso:2, termos:["estoque","produto","peça","peca","inventario","mercadoria","insumo"]},
- {nome:"Financeiro Completo", peso:2, termos:["financeiro","dinheiro","caixa","lucro","despesa","conta a pagar","conta a receber","fluxo"]},
- {nome:"Caixa PDV", peso:2, termos:["pdv","venda","balcão","balcao","frente de caixa","vender"]},
- {nome:"Ordens de Servico", peso:3, termos:["ordem","os","serviço","aparelho","celular","defeito","conserto","oficina","manutenção","garantia","equipamento","veiculo","carro"]},
- {nome:"WhatsApp Automatico", peso:2, termos:["whats","zap","mensagem","avisar cliente","notificação","automatico"]},
- {nome:"Agendamento", peso:3, termos:["agendamento","agenda","horário","marcar","reserva","consulta","atendimento"]},
- {nome:"Dashboard e Relatorios", peso:1, termos:["relatorio","dashboard","grafico","indicador","resultado"]},
- {nome:"App Android", peso:2, termos:["app","aplicativo","celular","mobile","android"]},
- {nome:"Nota Fiscal NFe", peso:3, termos:["nota","nfe","nfse","fiscal","imposto"]},
- {nome:"Delivery e iFood", peso:3, termos:["delivery","ifood","entrega","motoboy","cardapio"]},
- {nome:"Comissoes", peso:2, termos:["comissão","comissao","porcentagem vendedor","funcionario"]},
- {nome:"Contratos", peso:2, termos:["contrato","mensalidade","plano","recorrencia","assinatura"]},
- {nome:"Fidelidade Cashback", peso:2, termos:["fidelidade","cashback","pontos","desconto cliente"]},
- {nome:"Catalogo Online", peso:2, termos:["catalogo","site","vitrine","mostrar produto"]},
- {nome:"Chat Interno", peso:1, termos:["chat","conversa equipe","mensagem interna"]},
+// IA SUPER INTELIGENTE - ENTENDE QUALQUER JEITO
+function normalizar(s){ return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
+const MODULOS_INTELIGENTE=[
+ {nome:"Clientes e CRM", termos:["cliente","paciente","aluno","crm","contato","cadastro","ficha","caderno","planilha","nome","telefone","perco controle","perco cliente"]},
+ {nome:"Estoque e Produtos", termos:["estoque","produto","peca","inventario","mercadoria","insumo","perco peca","sumindo"]},
+ {nome:"Financeiro Completo", termos:["financeiro","dinheiro","caixa","lucro","despesa","conta","pagar","receber","fluxo","fechar caixa","quanto ganhei"]},
+ {nome:"Caixa PDV", termos:["pdv","venda","balcao","frente de caixa","vender","vendas"]},
+ {nome:"Ordens de Servico", termos:["ordem","os","servico","aparelho","celular","defeito","conserto","oficina","manutencao","garantia","equipamento","veiculo","carro","moto","conserto","arrumar"]},
+ {nome:"WhatsApp Automatico", termos:["whats","zap","mensagem","avisar","notificacao","cliente esquece","aviso automatico","mandar zap"]},
+ {nome:"Agendamento", termos:["agendamento","agenda","horario","marcar","reserva","consulta","atendimento","horario marcado"]},
+ {nome:"Dashboard e Relatorios", termos:["relatorio","dashboard","grafico","indicador","relatorio","nao sei quanto","controle"]},
+ {nome:"App Android", termos:["app","aplicativo","celular","mobile","android","na rua","fora da loja"]},
+ {nome:"App iOS", termos:["iphone","ios","app apple"]},
+ {nome:"Nota Fiscal NFe", termos:["nota","nfe","nfse","fiscal","imposto","emitir nota"]},
+ {nome:"Delivery e iFood", termos:["delivery","ifood","entrega","motoboy","cardapio","pedido entrega"]},
+ {nome:"Comissoes", termos:["comissao","porcentagem","funcionario","vendedor"]},
+ {nome:"Contratos", termos:["contrato","mensalidade","plano","recorrencia"]},
+ {nome:"Fidelidade Cashback", termos:["fidelidade","cashback","pontos","voltar cliente"]},
+ {nome:"Catalogo Online", termos:["catalogo","site","vitrine","mostrar produto","online"]},
 ];
 
-function renderChecks(){
- const container=document.getElementById("checksContainer");
- container.innerHTML=Object.keys(TABELA_PRECOS).map(nome=>`<label class="check"><input type="checkbox" class="modulo" data-nome="${nome}"> ${nome} <span class="price">+R$ ${TABELA_PRECOS[nome]}</span></label>`).join("");
-}
-renderChecks();
-
-function normalizar(str){
- return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-}
-
 function interpretarIA(){
- const raw=document.getElementById("descricao").value;
- const t=normalizar(raw);
- const res=document.getElementById("ia-result");
- if(!t.trim()){alert("Descreva sua ideia primeiro");return;}
- let scores={};
- MODULOS_DEFS.forEach(def=>{
-   let score=0;
-   def.termos.forEach(termo=>{
-     if(t.includes(normalizar(termo))) score+=def.peso;
-   });
-   // sinônimos leigos
-   if(t.includes("caderno") || t.includes("planilha") || t.includes("papel") || t.includes("perco controle")){ scores["Clientes e CRM"]=(scores["Clientes e CRM"]||0)+1; scores["Dashboard e Relatorios"]=(scores["Dashboard e Relatorios"]||0)+1; }
-   if(t.includes("esquece") || t.includes("aviso") || t.includes("lembrar")){ scores["WhatsApp Automatico"]=(scores["WhatsApp Automatico"]||0)+2; }
-   if(t.includes("tempo") || t.includes("demora") || t.includes("manual")){ scores["Dashboard e Relatorios"]=(scores["Dashboard e Relatorios"]||0)+1; }
-   if(score>0) scores[def.nome]=(scores[def.nome]||0)+score;
- });
- // Se nada detectado, sugere base
- if(Object.keys(scores).length===0){ scores["Clientes e CRM"]=2; scores["Financeiro Completo"]=2; scores["Dashboard e Relatorios"]=1; }
- let ordenados=Object.entries(scores).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]);
- document.querySelectorAll(".modulo").forEach(c=>c.checked=false);
- document.querySelectorAll(".modulo").forEach(c=>{ if(ordenados.includes(c.dataset.nome)) c.checked=true; });
- res.style.display="block";
- res.innerHTML=`<strong>Detectamos ${ordenados.length} módulos ideais para sua descrição:</strong><br>• ${ordenados.join("<br>• ")}<br><small style="opacity:.7">Você pode ajustar na próxima etapa.</small>`;
- calcular();
+  const raw = document.getElementById("descricao").value;
+  const r = document.getElementById("ia-result");
+  // NÃO OBRIGATÓRIO - SE VAZIO, SÓ AVISA E DEIXA SEGUIR
+  if(!raw.trim()){
+    r.style.display="block";
+    r.innerHTML="Você pode pular sem descrever e escolher os módulos manualmente na próxima etapa.";
+    return;
+  }
+  const t = normalizar(raw);
+  let scores = {};
+  MODULOS_INTELIGENTE.forEach(mod=>{
+    mod.termos.forEach(term=>{
+      if(t.includes(normalizar(term))) scores[mod.nome]=(scores[mod.nome]||0)+1;
+    });
+  });
+  // gatilhos leigos
+  if(t.includes("caderno")||t.includes("papel")||t.includes("whats")||t.includes("zap")){ scores["Clientes e CRM"]=(scores["Clientes e CRM"]||0)+1; }
+  if(t.includes("esqueco")||t.includes("esquece")||t.includes("avisar")){ scores["WhatsApp Automatico"]=(scores["WhatsApp Automatico"]||0)+2; }
+
+  let detectados = Object.entries(scores).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]);
+  if(detectados.length===0){ detectados=["Clientes e CRM","Dashboard e Relatorios"]; }
+  document.querySelectorAll(".modulo").forEach(c=>c.checked=false);
+  document.querySelectorAll(".modulo").forEach(c=>{ if(detectados.includes(c.dataset.nome)) c.checked=true; });
+  r.style.display="block";
+  r.innerHTML=`<strong>IA Detectou ${detectados.length} módulos para você:</strong><br>${detectados.join(", ")}`;
+  calcular();
 }
 
-function getPreco(nome){return TABELA_PRECOS[nome]||15;}
 function calcular(){
- let total=160, mods=[];
- document.querySelectorAll(".modulo").forEach(m=>{ if(m.checked){ total+=getPreco(m.dataset.nome); mods.push({nome:m.dataset.nome,valor:getPreco(m.dataset.nome)}); }});
- total+=Number(document.getElementById("usuarios").value||0);
- valorProjeto=total;
- document.getElementById("valor").innerText=total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
- document.getElementById("projetoNome").innerText=document.getElementById("negocio").value+" - Sistema personalizado";
- let prazo=total<=200?"7 a 12 dias úteis":total<=320?"12 a 20 dias úteis":"20 a 35 dias úteis";
- document.getElementById("prazo").innerHTML=`<strong>Prazo estimado:</strong> ${prazo} | <strong>Módulos:</strong> ${mods.length}`;
- document.getElementById("escopo").innerHTML=mods.map(i=>`<li><i class="fa-solid fa-check" style="color:#00e5ff"></i> ${i.nome} <span style="opacity:.5">(+R$ ${i.valor})</span></li>`).join("") || "<li>Sistema base incluso - R$ 160</li>";
-
- let horas=Number(document.getElementById("horasManual").value||0);
- let vHora=Number(document.getElementById("valorHora").value||0);
- let economiaMes=horas*4*vHora;
- if(economiaMes>0){
-   document.getElementById("economia").innerText=`Estimativa: até R$ ${economiaMes.toLocaleString("pt-BR")} /mês em horas operacionais que podem ser otimizadas*`;
-   document.getElementById("roiInfo1").innerText=`Horas informadas: ${horas}h/semana`;
-   document.getElementById("roiInfo2").innerText=`Economia potencial estimada: R$ ${economiaMes.toLocaleString("pt-BR")}/mês`;
-   desenharROI(total, economiaMes);
- }else{
-   document.getElementById("economia").innerText=`Informe horas manuais para estimar impacto.`;
-   desenharROI(total, total*0.4);
- }
+  let total=160,mods=[];
+  document.querySelectorAll(".modulo").forEach(m=>{ if(m.checked){ let preco=getPrecoModulo(m.dataset.nome); total+=preco; mods.push({nome:m.dataset.nome,valor:preco}); } });
+  total+=Number(document.getElementById("usuarios").value);
+  valorProjeto=total;
+  let valorComDesconto = descontoAtivo? Math.round(total * 0.9) : total;
+  document.getElementById("valor").innerText=total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  const elParc=document.getElementById("parcelamento"); if(elParc) elParc.innerHTML=`<i class="fa-solid fa-credit-card"></i> Em até 12x no cartão`;
+  const elDesc=document.getElementById("descontoPix"); if(elDesc){ if(descontoAtivo){ elDesc.innerHTML=`<i class="fa-solid fa-bolt"></i> PIX com 10% OFF: <b>${valorComDesconto.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</b>`; } else { elDesc.innerHTML=`<i class="fa-solid fa-bolt"></i> PIX com desconto especial`; } }
+  let prazo=total<=200?"5 a 10 dias":total<=300?"10 a 15 dias":total<=400?"15 a 25 dias":"25 a 40 dias";
+  document.getElementById("prazo").innerHTML=`<strong>Prazo:</strong> ${prazo} | <strong>Módulos:</strong> ${mods.length}`;
+  document.getElementById("projetoNome").innerText=document.getElementById("negocio").value+" - Personalizado";
+  let html=mods.length?"":"<li>Sistema base incluso - R$ 160</li>"; mods.forEach(i=> html+=`<li><i class="fa-solid fa-check" style="color:#00e5ff"></i> ${i.nome} <span style="opacity:.5">(+R$ ${i.valor})</span></li>`);
+  document.getElementById("escopo").innerHTML=html;
+  let eco=Math.round(total*0.85); document.getElementById("economia").innerText=`Economia potencial: R$ ${eco.toLocaleString("pt-BR")}/mês`;
+  const elRoi=document.getElementById("roiValor"); if(elRoi) elRoi.innerText=eco.toLocaleString("pt-BR");
+  desenharROI(total,eco);
 }
 function desenharROI(inv,eco){
- const c=document.getElementById("roiChart"); if(!c) return; if(roiChart) roiChart.destroy();
- const labels=Array.from({length:12},(_,i)=>`Mês ${i+1}`); const ecoAcum=labels.map((_,i)=>eco*(i+1)); const invArr=labels.map(()=>inv);
- roiChart=new Chart(c.getContext("2d"),{type:"line",data:{labels,datasets:[{label:"Economia acumulada estimada",data:ecoAcum,borderColor:"#00e5ff",backgroundColor:"rgba(0,229,255,.15)",fill:true,tension:.4},{label:"Investimento",data:invArr,borderColor:"#7b61ff",borderDash:[6,4],pointRadius:0}]},options:{responsive:true,plugins:{legend:{labels:{color:"#fff",font:{size:11}}}},scales:{y:{ticks:{color:"#888"}},x:{ticks:{color:"#888"}}}}});
+  const c=document.getElementById("roiChart"); if(!c) return; if(roiChart) roiChart.destroy();
+  const labels=Array.from({length:12},(_,i)=>`Mes ${i+1}`); const ecoAcum=labels.map((_,i)=>eco*(i+1)); const invArr=labels.map(()=>inv);
+  roiChart=new Chart(c.getContext("2d"),{type:"line",data:{labels,datasets:[{label:"Economia Acumulada",data:ecoAcum,borderColor:"#00e5ff",backgroundColor:"rgba(0,229,255,.15)",fill:true,tension:.4,borderWidth:3,pointRadius:4},{label:"Investimento",data:invArr,borderColor:"#7b61ff",backgroundColor:"rgba(123,97,255,.1)",fill:false,borderDash:[6,4],pointRadius:0}]},options:{responsive:true,animation:false,plugins:{legend:{labels:{color:"#fff",font:{size:11}}}},scales:{y:{ticks:{color:"#888"}},x:{ticks:{color:"#888"}}}}});
 }
-function nextEtapa(n){document.querySelectorAll(".etapa").forEach(e=>e.classList.remove("active"));document.getElementById("etapa"+n).classList.add("active");document.getElementById("progress").style.width=(n*33.3)+"%";window.scrollTo({top:document.getElementById("simulador").offsetTop-80,behavior:"smooth"});}
-function selecionarTodos(){todosSelecionados=!todosSelecionados;document.querySelectorAll(".modulo").forEach(m=>m.checked=todosSelecionados);calcular();}
-function reiniciarSimulacao(){document.querySelectorAll(".modulo").forEach(m=>m.checked=false);document.getElementById("descricao").value="";document.getElementById("ia-result").style.display="none";calcular();nextEtapa(1);}
-
-const themeToggle=document.getElementById("themeToggle");
-function aplicarTema(t){document.documentElement.setAttribute("data-theme",t);localStorage.setItem("theme",t);if(themeToggle) themeToggle.innerHTML=t==="light"?'<i class="fa-solid fa-moon"></i>':'<i class="fa-solid fa-sun"></i>';}
-if(themeToggle) themeToggle.addEventListener("click",()=>{const a=document.documentElement.getAttribute("data-theme")||"dark";aplicarTema(a==="light"?"dark":"light");});
-aplicarTema(localStorage.getItem("theme")||"dark");
-
+function validar(){ const n=document.getElementById("leadNome").value.trim(),w=document.getElementById("leadWhatsapp").value.trim(),e=document.getElementById("leadEmail").value.trim(); if(!n||!w||!e){alert("Preencha Nome, WhatsApp e E-mail");return false;} return true; }
 const SUPABASE_URL="https://ecrpiuhsbhuqcxbbpqfh.supabase.co";
 const SUPABASE_KEY="sb_publishable_I7Hw7KieW3VNFqb9LYrFoQ_tFWWABwl";
 async function salvarLead(){
- const lead={data:new Date().toLocaleString("pt-BR"),nome:document.getElementById("leadNome").value||'Não informou',empresa:document.getElementById("leadEmpresa").value||'Não informou',whatsapp:document.getElementById("leadWhatsapp").value,email:document.getElementById("leadEmail").value,cidade:document.getElementById("leadCidade").value||'Não informou',negocio:document.getElementById("negocio").value,valor:document.getElementById("valor").innerText,descricao:document.getElementById("descricao").value||'Quero um sistema sob medida',horas:document.getElementById("horasManual").value||0,escopo:Array.from(document.querySelectorAll(".modulo:checked")).map(m=>m.dataset.nome).join(", ")||'Sistema base'};
- try{const local=JSON.parse(localStorage.getItem("leadsDA")||"[]");local.push(lead);localStorage.setItem("leadsDA",JSON.stringify(local));}catch(e){}
- try{await fetch(`${SUPABASE_URL}/rest/v1/leads`,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify(lead)});}catch(e){console.log("Fallback local - Supabase offline",e);}
+  const lead={data:new Date().toLocaleString("pt-BR"),nome:document.getElementById("leadNome").value||'Nao informou',empresa:document.getElementById("leadEmpresa").value||'Nao informou',whatsapp:document.getElementById("leadWhatsapp").value,email:document.getElementById("leadEmail").value,cidade:document.getElementById("leadCidade").value||'Nao informou',negocio:document.getElementById("negocio").value,valor:document.getElementById("valor").innerText,descricao:document.getElementById("descricao").value||'Quero um sistema sob medida',escopo:Array.from(document.querySelectorAll(".modulo:checked")).map(m=>m.dataset.nome).join(", ")||'Sistema base'};
+  try{ const local=JSON.parse(localStorage.getItem("leadsDA")||"[]"); local.push(lead); localStorage.setItem("leadsDA",JSON.stringify(local)); }catch(e){}
+  try{ await fetch(`${SUPABASE_URL}/rest/v1/leads`,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify(lead)}); }catch(e){ console.log("Fallback local",e); }
 }
-function validar(){const n=document.getElementById("leadNome").value.trim(),w=document.getElementById("leadWhatsapp").value.trim(),e=document.getElementById("leadEmail").value.trim();if(!n||!w||!e){alert("Preencha Nome, WhatsApp e E-mail");return false;}return true;}
 async function gerarPDFBlob(){
- const {jsPDF}=window.jspdf; const doc=new jsPDF('p','mm','a4'); const W=210;
- doc.setFillColor(5,8,22); doc.rect(0,0,W,297,"F");
- doc.setFillColor(0,229,255); doc.rect(0,0,W,6,"F");
- doc.setTextColor(255,255,255); doc.setFontSize(14); doc.setFont("helvetica","bold"); doc.text("DA SOFTWARE",15,14);
- doc.setFontSize(7); doc.setTextColor(180,180,200); doc.text("SISTEMAS SOB MEDIDA A PARTIR DE R$ 160",15,18);
- doc.setTextColor(255,255,255); doc.setFontSize(11); doc.text("Proposta Comercial",15,27);
- doc.setFontSize(8); doc.setTextColor(200,200,220);
- doc.text(`Cliente: ${document.getElementById("leadNome").value}`,15,32);
- doc.text(`Segmento: ${document.getElementById("negocio").value} | ${document.getElementById("prazo").innerText}`,15,36);
- doc.text(`Investimento: ${document.getElementById("valor").innerText} | ${document.getElementById("economia").innerText}`,15,40);
- doc.setFontSize(9); doc.setTextColor(255,255,255); doc.text("Escopo:",15,47);
- doc.setFontSize(8); let y=51; document.querySelectorAll(".modulo:checked").forEach(m=>{doc.setTextColor(220,220,255); doc.text(`- ${m.dataset.nome} (+R$ ${getPreco(m.dataset.nome)})`,15,y); y+=5;});
- doc.setFontSize(7); doc.setTextColor(150,150,170); doc.text("Valores são estimativas. Economia baseada em horas informadas pelo cliente, sem promessa de lucro.",15, y+10);
- try{const canvas=document.getElementById("roiChart"); if(canvas){doc.addPage(); doc.setFillColor(5,8,22); doc.rect(0,0,W,297,"F"); doc.addImage(canvas.toDataURL("image/png"),'PNG',10,15,W-20,80);} }catch(e){}
- return doc;
+  await new Promise(r=>setTimeout(r, 500)); if(!roiChart){ calcular(); await new Promise(r=>setTimeout(r, 800)); }
+  const {jsPDF}=window.jspdf; const doc=new jsPDF('p','mm','a4'); const W=210, H=297;
+  doc.setFillColor(5,8,22); doc.rect(0,0,W,H,"F"); doc.setFillColor(0,229,255); doc.rect(0,0,W,7,"F");
+  if(logoBase64){ try{ doc.addImage(logoBase64,'PNG',15,10,11,11); }catch(e){} doc.setTextColor(255,255,255); doc.setFontSize(15); doc.setFont("helvetica","bold"); doc.text("SOFTWARE",29,18); } else { doc.setTextColor(0,229,255); doc.setFontSize(15); doc.text("DA SOFTWARE",15,18); }
+  doc.setFontSize(7); doc.setTextColor(180,180,200); doc.text("SISTEMAS SOB MEDIDA - CALCULO REAL DE SISTEMA",15,23);
+  doc.setDrawColor(0,229,255); doc.line(15,25,W-15,25);
+  doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont("helvetica","bold"); doc.text("Proposta Comercial Premium",15,32);
+  doc.setFontSize(9); doc.setTextColor(200,200,220); doc.setFont("helvetica","normal");
+  doc.text(`Cliente: ${document.getElementById("leadNome").value} ${document.getElementById("leadEmpresa").value? "- " + document.getElementById("leadEmpresa").value : ""}`,15,37);
+  doc.text(`Segmento: ${document.getElementById("negocio").value} | Data: ${new Date().toLocaleDateString("pt-BR")}`,15,41);
+  doc.text(`Contato: ${document.getElementById("leadWhatsapp").value} | ${document.getElementById("leadEmail").value} | ${document.getElementById("leadCidade").value}`,15,45);
+  doc.setFillColor(16,22,42); doc.roundedRect(15,49,W-30,22,3,3,"F");
+  doc.setTextColor(0,229,255); doc.setFontSize(8); doc.setFont("helvetica","bold"); doc.text("INVESTIMENTO - CALCULO REAL",18,55);
+  doc.setTextColor(255,255,255); doc.setFontSize(20); doc.text(`${document.getElementById("valor").innerText}`,18,64);
+  doc.setFontSize(7); doc.setTextColor(160,180,200); doc.text(doc.splitTextToSize(`${document.getElementById("prazo").innerText} | Em ate 12x no cartao | ${document.getElementById("descontoPix").innerText}`, 90), 105, 53);
+  doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont("helvetica","bold"); doc.text("Descricao do Cliente:",15,76);
+  doc.setFontSize(8); doc.setFont("helvetica","normal"); doc.setTextColor(200,200,200);
+  let descLinhas=doc.splitTextToSize(document.getElementById("descricao").value || "Nao informado - cliente optou por escolher modulos manualmente", W-30);
+  doc.text(descLinhas,15,80); let y=80+descLinhas.length*4+6;
+  doc.setFontSize(9); doc.setFont("helvetica","bold"); doc.setTextColor(255,255,255); doc.text("Escopo Incluido:",15,y); y+=6;
+  doc.setFontSize(8); doc.setFont("helvetica","normal");
+  document.querySelectorAll(".modulo:checked").forEach(m=>{
+    let preco=getPrecoModulo(m.dataset.nome);
+    if(y> H-25){ doc.addPage(); doc.setFillColor(5,8,22); doc.rect(0,0,W,H,"F"); y=15; }
+    doc.setFillColor(23,32,51); doc.roundedRect(15,y-3,W-30,8,2,2,"F");
+    doc.setTextColor(230,230,255); doc.text(`- ${m.dataset.nome} (+R$ ${preco})`,18,y+1); y+=10;
+  });
+  doc.addPage(); doc.setFillColor(5,8,22); doc.rect(0,0,W,H,"F"); doc.setFillColor(0,229,255); doc.rect(0,0,W,7,"F");
+  doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont("helvetica","bold"); doc.text("ANALISE CONCLUIDA - ROI 12 MESES",15,16);
+  doc.setFontSize(8); doc.setFont("helvetica","normal"); doc.setTextColor(180,180,200); doc.text(`${document.getElementById("prazo").innerText}`,15,22); doc.text(`${document.getElementById("economia").innerText}`,15,26);
+  try{ const canvas=document.getElementById("roiChart"); if(canvas){ doc.addImage(canvas.toDataURL("image/png",1.0),'PNG',10,30, W-20, 85); } }catch(e){}
+  doc.setFillColor(16,22,42); doc.roundedRect(15,135,W-30,28,3,3,"F");
+  doc.setTextColor(0,229,255); doc.setFontSize(8); doc.setFont("helvetica","bold"); doc.text("RESUMO FINANCEIRO 12 MESES",18,141);
+  doc.setFont("helvetica","normal"); doc.setTextColor(255,255,255); doc.setFontSize(7);
+  let eco=Math.round(valorProjeto*0.85);
+  doc.text(`Investimento unico: ${document.getElementById("valor").innerText}`,18,146);
+  doc.text(`Em ate 12x no cartao | PIX com 10% OFF: ${Math.round(valorProjeto*0.9).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}`,18,150);
+  doc.text(`Economia total 12 meses: R$ ${(eco*12).toLocaleString("pt-BR")}`,18,154);
+  return doc;
 }
 async function enviarWhatsappComPDF(){
- if(!validar()) return; calcular(); await salvarLead();
- const doc=await gerarPDFBlob(); doc.save(`Proposta-DA-${document.getElementById("leadNome").value||"Cliente"}.pdf`);
- let esc=""; document.querySelectorAll(".modulo:checked").forEach(m=>{esc+=`• ${m.dataset.nome} (+R$ ${getPreco(m.dataset.nome)})\n`;});
- const msg=`*NOVA SIMULAÇÃO - DA SOFTWARE*\n\n*Cliente:* ${document.getElementById("leadNome").value}\n*Empresa:* ${document.getElementById("leadEmpresa").value}\n*Cidade:* ${document.getElementById("leadCidade").value}\n*Segmento:* ${document.getElementById("negocio").value}\n*Investimento:* ${document.getElementById("valor").innerText}\n*${document.getElementById("prazo").innerText}*\n*${document.getElementById("economia").innerText}*\n\n*MÓDULOS:*\n${esc||"- Base R$ 160"}\n*DESCRIÇÃO:*\n${document.getElementById("descricao").value}\n\n*CONTATO:* ${document.getElementById("leadWhatsapp").value} | ${document.getElementById("leadEmail").value}`;
- window.open(`https://wa.me/${WHATSAPP_NUM}?text=${encodeURIComponent(msg)}`,"_blank");
+  if(!validar()) return;
+  calcular(); salvarLead(); desenharROI(valorProjeto, Math.round(valorProjeto*0.85));
+  await new Promise(r=>setTimeout(r, 600));
+  const doc=await gerarPDFBlob();
+  doc.save(`Proposta-DA-${document.getElementById("leadNome").value||"Cliente"}.pdf`);
+  let esc=""; document.querySelectorAll(".modulo:checked").forEach(m=>{ esc+=`> ${m.dataset.nome} (+R$ ${getPrecoModulo(m.dataset.nome)})\n`; });
+  const valor=document.getElementById("valor").innerText;
+  const valorComDesc=descontoAtivo? Math.round(valorProjeto*0.9).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}) : valor;
+  const msg="*NOVA SOLICITACAO - DA SOFTWARE*\n--------------------------------\n\n*Cliente:* "+document.getElementById("leadNome").value+"\n*Empresa:* "+(document.getElementById("leadEmpresa").value||'Nao informou')+"\n*Cidade:* "+(document.getElementById("leadCidade").value||'Nao informou')+"\n\n*PROJETO:*\nSegmento: "+document.getElementById("negocio").value+"\nInvestimento: *"+valor+"*\nPIX com 10% OFF: *"+valorComDesc+"*\nPagamento: Em ate 12x no cartao ou PIX com desconto\n"+document.getElementById("prazo").innerText+"\n\n*MODULOS INCLUSOS:*\n"+(esc||"- Sistema base incluso - R$ 160\n")+"\n*NECESSIDADE:*\n"+(document.getElementById("descricao").value||"Cliente optou por escolher modulos manualmente")+"\n\n*CONTATOS:*\nWhatsApp: "+document.getElementById("leadWhatsapp").value+"\nEmail: "+document.getElementById("leadEmail").value+"\n\nPDF com grafico baixado!\nQuero a proposta completa!";
+  window.open(`https://wa.me/${WHATSAPP_NUM}?text=${encodeURIComponent(msg)}`,"_blank");
 }
-let recognition=null,gravando=false,textoAcumulado="";
+let recognition=null, gravando=false; let textoAcumulado="";
 function toggleGravacao(){
- const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SR){alert("Use Chrome no celular");return;}
- const icon=document.getElementById("iconMic"), status=document.getElementById("audioStatus");
- if(gravando){gravando=false;icon.className="fa-solid fa-microphone";status.style.display="none";try{recognition.stop();}catch(e){}return;}
- textoAcumulado=document.getElementById("descricao").value?document.getElementById("descricao").value+" ":"";
- recognition=new SR(); recognition.lang="pt-BR"; recognition.continuous=true; recognition.interimResults=true;
- recognition.onstart=()=>{gravando=true;icon.className="fa-solid fa-stop";status.style.display="block";};
- recognition.onresult=(e)=>{let final="";for(let i=0;i<e.results.length;i++) if(e.results[i].isFinal) final+=e.results[i][0].transcript+" "; const desc=document.getElementById("descricao"); if(final) desc.value=textoAcumulado+final;};
- recognition.onend=()=>{if(gravando) try{recognition.start();}catch(e){} else {gravando=false;}};
- recognition.start();
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){alert("Use Google Chrome no celular!");return;}
+  const btn=document.getElementById("btnAudio"), icon=document.getElementById("iconMic"), status=document.getElementById("audioStatus");
+  const descricao=document.getElementById("descricao");
+  if(gravando){ gravando=false; if(btn) btn.classList.remove("gravando"); if(icon) icon.className="fa-solid fa-microphone"; if(status) status.style.display="none"; try{ recognition.stop(); }catch(e){} return; }
+  textoAcumulado=descricao.value?descricao.value+" ":"";
+  recognition=new SR(); recognition.lang="pt-BR"; recognition.continuous=true; recognition.interimResults=true;
+  recognition.onstart=()=>{ gravando=true; if(btn) btn.classList.add("gravando"); if(icon) icon.className="fa-solid fa-stop"; if(status){ status.style.display="block"; status.innerHTML='<i class="fa-solid fa-circle" style="color:red; animation: pulse 1s infinite;"></i> Ouvindo continuo... clique de novo para parar'; } };
+  recognition.onresult=(e)=>{ let final=""; for(let i=0;i<e.results.length;i++){ if(e.results[i].isFinal) final+=e.results[i][0].transcript+" "; } if(final){ descricao.value=textoAcumulado+final; } else { let parcial=""; for(let i=0;i<e.results.length;i++) parcial+=e.results[i][0].transcript; descricao.value=textoAcumulado+parcial; } };
+  recognition.onend=()=>{ if(gravando){ try{ recognition.start(); }catch(e){} } else { const b=document.getElementById("btnAudio"); if(b) b.classList.remove("gravando"); const i=document.getElementById("iconMic"); if(i) i.className="fa-solid fa-microphone"; const s=document.getElementById("audioStatus"); if(s) s.style.display="none"; } };
+  recognition.onerror=()=>{ if(gravando){ setTimeout(()=>{ try{ recognition.start(); }catch(e){} }, 500); } };
+  recognition.start();
 }
-document.addEventListener("change",()=>{if(document.getElementById("etapa2").classList.contains("active")||document.getElementById("etapa3").classList.contains("active")) calcular();});
-calcular();
+const nomesBase=["Ana","Carlos","Lucas","Mariana","Rafael","Juliana","Fernando","Patricia","Diego","Bruna","Thiago","Camila","Roberto","Leticia","Gustavo","Amanda","Felipe","Larissa","Rodrigo","Isabela","Marcelo","Vanessa","Leandro","Priscila","Fabio","Renata","Alexandre","Tatiane","Eduardo","Debora","Samuel","Aline","Henrique","Simone","Andre","Cristiane","Paulo","Michele","Ricardo","Elisa","Jorge","Carla","Vinicius","Luciana","Caio","Bianca","Danilo","Silvia","Igor","Regiane","Murilo","Sandra","Cesar","Fatima","Erick","Rosana","Maicon","Eliane","Wesley","Josiane","Alex","Kelly","Diogo","Cintia","Cleber","Daiane","Douglas","Elaine","Everton","Flavia","Gilberto","Gisele","Helio","Jaqueline","Jean","Jessica","Joao","Juliane","Karina","Leonardo","Lilian","Luciano","Luana","Marcos","Marcela","Mauricio","Monica","Nelson","Natalia","Otavio","Paula","Reinaldo","Renan","Rogerio","Sabrina","Sandro","Sueli","Valter","Viviane","Wilson","Tania","Claudio","Denise","Edson","Elisangela","Emerson","Fabiana","Fabiano","Fernanda","Francisco","Gabriel","Giovanna","Guilherme","Helena","Ivan","Janaina","Jonas","Julia","Julio","Leila","Livia","Luiz","Luiza","Mauro","Milena","Naiara","Neusa","Nilson","Orlando","Paula","Roseli","Sergio","Sheila","Sidnei","Solange","Tais","Valeria","Vanderlei","Vitor"];
+const cidades=["Sao Paulo, SP","Rio de Janeiro, RJ","Belo Horizonte, MG","Curitiba, PR","Porto Alegre, RS","Salvador, BA","Recife, PE","Fortaleza, CE","Goiania, GO","Brasilia, DF","Sao Jose do Rio Preto, SP","Mirassol, SP","Uberaba, MG","Ribeirao Preto, SP","Campinas, SP","Sorocaba, SP","Uberlandia, MG","Londrina, PR","Maringa, PR","Joinville, SC","Florianopolis, SC","Cuiaba, MT","Campo Grande, MS","Manaus, AM","Belem, PA","Vitoria, ES","Santos, SP","Jundiai, SP","Osasco, SP","Guarulhos, SP","Contagem, MG","Anapolis, GO","Palmas, TO","Juiz de Fora, MG"];
+const negociosLista=["Assistencia - R$","Mercado - R$","Oficina - R$","Lava Jato - R$","Restaurante - R$","Clinica - R$","Pet Shop - R$","Academia - R$","Imobiliaria - R$","Farmacia - R$","Startup Completa - R$","Auto Pecas - R$"];
+const modulosPool=["Clientes e CRM","Estoque","Financeiro","PDV","Ordens","WhatsApp","Agendamento","Dashboard","App Android","App iOS","Multi-empresas","NFe","Delivery","Comissoes","Contratos","Chat","Assinatura","Fidelidade","Catalogo","Backup"];
+function gerarNotificacoes(qtd){ const lista=[]; for(let i=0;i<qtd;i++){ const nome=nomesBase[Math.floor(Math.random()*nomesBase.length)]; const cidade=cidades[Math.floor(Math.random()*cidades.length)]; const negocioBase=negociosLista[Math.floor(Math.random()*negociosLista.length)]; const valor=Math.floor(Math.random()*(400-100+1))+100; const data=new Date(Date.now()-Math.floor(Math.random()*1000*60*60*72)); const dataStr=data.toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}); const escopo=modulosPool.sort(()=>0.5-Math.random()).slice(0,Math.floor(Math.random()*4)+2); lista.push({nome:`${nome} - ${cidade}`,nomeCurto:nome,cidade,projeto:`${negocioBase} ${valor}`,valor,negocio:negocioBase.replace(" - R$",""),dataStr,escopo}); } return lista; }
+const notificacoes=gerarNotificacoes(300); let ultimoIdx=-1;
+function abrirDetalheNotificacao(){ if(!notificacaoAtual) return; document.getElementById("modal-titulo").innerText=`${notificacaoAtual.nomeCurto} simulou um projeto`; document.getElementById("modal-data").innerText=`Gerado em: ${notificacaoAtual.dataStr} - ${notificacaoAtual.cidade}`; document.getElementById("modal-negocio").innerText=`${notificacaoAtual.projeto} | ${notificacaoAtual.negocio}`; const ul=document.getElementById("modal-escopo"); ul.innerHTML=""; notificacaoAtual.escopo.forEach(m=>{ ul.innerHTML+=`<li><i class="fa-solid fa-check" style="color:#00e5ff"></i> ${m}</li>`; }); document.getElementById("notif-modal").classList.add("show"); }
+setInterval(()=>{ let idx; do{ idx=Math.floor(Math.random()*notificacoes.length); }while(idx===ultimoIdx); ultimoIdx=idx; notificacaoAtual=notificacoes[idx]; document.getElementById("notif-name").innerText=notificacoes[idx].nome; document.getElementById("notif-project").innerText=notificacoes[idx].projeto; document.getElementById("sales-notification").classList.add("show"); setTimeout(()=>document.getElementById("sales-notification").classList.remove("show"),5000); },8500);
+function iniciarTimer(){
+  let fim=localStorage.getItem("da_timer_fim"); if(!fim){ fim=Date.now()+15*60*1000; localStorage.setItem("da_timer_fim",fim); } else fim=Number(fim);
+  const elTimer=document.getElementById("timer"); const elAtivo=document.getElementById("descontoAtivo");
+  setInterval(()=>{
+    let rest=fim-Date.now();
+    if(rest<=0){ descontoAtivo=false; if(elTimer) elTimer.innerText="00:00"; if(elAtivo) elAtivo.innerText="EXPIRADO"; document.getElementById("top-timer").style.background="#555"; calcular(); return; }
+    let m=Math.floor(rest/60000), s=Math.floor((rest%60000)/1000);
+    if(elTimer) elTimer.innerText=`${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  },1000);
+}
+document.addEventListener("change",()=>{ if(etapaAtual>=2) calcular(); }); calcular();
