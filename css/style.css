@@ -93,3 +93,13 @@ footer{text-align:center;padding:40px;opacity:.5;font-size:13px}
 [data-theme="light"].sales-notif, [data-theme="light"].notif-modal-content{background:#fff!important;border:1px solid rgba(0,0,0,.1)!important;color:#0a0e1f!important}
 [data-theme="light"].btn-voltar{border-color:rgba(0,0,0,.15)!important;color:#0a0e1f!important}
 [data-theme="light"] footer{color:#4a5568!important}
+
+/* FIX DEFINITIVO - LOGO NO MODO CLARO */
+html[data-theme="light"] nav .logo span,
+[data-theme="light"] nav .logo span,
+[data-theme="light"] .logo span {
+  color: #050816 !important;
+  -webkit-text-fill-color: #050816 !important;
+  background: none !important;
+  opacity: 1 !important;
+}
