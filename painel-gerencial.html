@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DA Software | Simule seu sistema</title>
+<link rel="icon" type="image/png" href="./assets/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link rel="stylesheet" href="./css/style.css?v=9999">
+</head>
+<body>
+<div id="particles-js"></div><div class="background-glow"></div>
+<div id="sales-notification" class="sales-notif" onclick="abrirDetalheNotificacao()"><i class="fa-solid fa-bolt"></i><div><strong id="notif-name">Carlos</strong> simulou <span id="notif-project">Assistencia - R$ 380</span><small style="display:block;opacity:.6;font-size:10px">Clique para ver</small></div></div>
+<div id="notif-modal" class="notif-modal" onclick="if(event.target.id==='notif-modal')this.classList.remove('show')"><div class="notif-modal-content"><button class="close-modal" onclick="document.getElementById('notif-modal').classList.remove('show')"><i class="fa-solid fa-xmark"></i></button><h3 id="modal-titulo"></h3><p id="modal-data" style="opacity:.6;font-size:12px;margin:6px 0"></p><p id="modal-negocio" style="font-weight:600;color:#00e5ff"></p><ul id="modal-escopo" class="escopo-lista" style="margin-top:12px"></ul></div></div>
+<nav>
+<div class="logo"><img src="./assets/logo.png" alt="DA"><span>SOFTWARE</span></div>
+<div class="nav-actions"><button id="themeToggle" class="theme-btn"><i class="fa-solid fa-sun"></i></button></div>
+</nav>
+<header class="hero">
+<div class="hero-content" data-aos="fade-up" data-aos-duration="1000">
+<span class="tag" data-aos="zoom-in"><i class="fa-solid fa-rocket"></i> Saia de planilhas no Excel, venha montar seu próprio programa conosco</span>
+<h1 data-aos="fade-up" data-aos-delay="200">Seu sistema sob medida <span class="gradient">a partir de R$ 160</span></h1>
+<p data-aos="fade-up" data-aos-delay="400">Descreva sua ideia e o nosso sistema montará o escopo automaticamente, calculando prazos, ganhos/perdas e economia mensal.</p>
+<div class="hero-btns" data-aos="fade-up" data-aos-delay="600"><a href="#simulador" class="cta"><i class="fa-solid fa-wand-magic-sparkles"></i> Simular meu projeto agora</a></div>
+</div>
+</header>
+
+<section class="como-funciona" data-aos="fade-up">
+<h2>Como funciona</h2>
+<p class="comp-sub">Simule em menos de 2 minutos</p>
+<div class="passos">
+<div class="passo"><span>01</span><h3>Descreva</h3><p>Escreva com suas palavras. Nossa IA entende exatamente o sistema que você irá precisar.</p></div>
+<div class="passo"><span>02</span><h3>IA Analisa</h3><p>Detectamos só os módulos que você realmente precisa. Neste processo, você também poderá marcar manualmente os módulos.</p></div>
+<div class="passo"><span>03</span><h3>Receba a Proposta</h3><p>Valor, prazo e PDF completo para avaliar antes de fechar.</p></div>
+</div>
+</section>
+
+<section class="segmentos">
+<h2 data-aos="fade-up">Qualquer Negócio, <span class="gradient">Seu Sistema Perfeito</span></h2>
+<div class="cards">
+<div class="card tilt" data-aos="zoom-in" data-aos-delay="0"><i class="fa-solid fa-store"></i><h3>Mercado</h3><p>A partir de R$ 300</p></div>
+<div class="card tilt" data-aos="zoom-in" data-aos-delay="50"><i class="fa-solid fa-car"></i><h3>Lava Jato</h3><p>A partir de R$ 220</p></div>
+<div class="card tilt" data-aos="zoom-in" data-aos-delay="100"><i class="fa-solid fa-screwdriver-wrench"></i><h3>Oficina</h3><p>A partir de R$ 250</p></div>
+<div class="card tilt" data-aos="zoom-in" data-aos-delay="150"><i class="fa-solid fa-mobile-screen-button"></i><h3>Assistencia</h3><p>A partir de R$ 190</p></div>
+<div class="card tilt" data-aos="zoom-in" data-aos-delay="200"><i class="fa-solid fa-utensils"></i><h3>Restaurante</h3><p>A partir de R$ 300</p></div>
+<div class="card tilt" data-aos="zoom-in" data-aos-delay="250"><i class="fa-solid fa-scissors"></i><h3>Salao / Clinica</h3><p>A partir de R$ 400</p></div>
+<div class="card tilt" data-aos="zoom-in" data-aos-delay="300"><i class="fa-solid fa-house-chimney"></i><h3>Imobiliaria</h3><p>A partir de R$ 290</p></div>
+<div class="card tilt" data-aos="zoom-in" data-aos-delay="350"><i class="fa-solid fa-dumbbell"></i><h3>Academia</h3><p>A partir de R$ 380</p></div>
+<div class="card tilt" data-aos="zoom-in" data-aos-delay="0"><i class="fa-solid fa-paw"></i><h3>Pet Shop</h3><p>A partir de R$ 200</p></div>
+<div class="card tilt" data-aos="zoom-in" data-aos-delay="50"><i class="fa-solid fa-gear"></i><h3>Auto Pecas</h3><p>A partir de R$ 400</p></div>
+<div class="card tilt" data-aos="zoom-in" data-aos-delay="100"><i class="fa-solid fa-prescription-bottle-medical"></i><h3>Farmacia</h3><p>A partir de R$ 500</p></div>
+<div class="card tilt" data-aos="zoom-in" data-aos-delay="150"><i class="fa-solid fa-graduation-cap"></i><h3>Escola</h3><p>A partir de R$ 260</p></div>
+<div class="card tilt" data-aos="zoom-in" data-aos-delay="200"><i class="fa-solid fa-truck-fast"></i><h3>Transporte</h3><p>A partir de R$ 300</p></div>
+<div class="card tilt" data-aos="zoom-in" data-aos-delay="250"><i class="fa-solid fa-scale-balanced"></i><h3>Advocacia</h3><p>A partir de R$ 240</p></div>
+<div class="card tilt" data-aos="zoom-in" data-aos-delay="300"><i class="fa-solid fa-helmet-safety"></i><h3>Construtora</h3><p>A partir de R$ 320</p></div>
+<div class="card tilt" data-aos="zoom-in" data-aos-delay="350"><i class="fa-solid fa-rocket"></i><h3>Startup Completa</h3><p>Sob Medida</p></div>
+</div>
+</section>
+
+<section class="comparador" data-aos="fade-up">
+<h2>Planilha vs <span class="gradient">Sistema Profissional</span></h2>
+<p class="comp-sub">Veja na prática quanto você perde usando Excel, Caderno ou WhatsApp</p>
+<div class="comp-grid">
+<div class="comp-col comp-bad">
+<h4><i class="fa-solid fa-xmark"></i> EXCEL / CADERNO / WHATSAPP</h4>
+<ul>
+<li><i class="fa-solid fa-xmark"></i> Perde clientes, sem lembrete automático</li>
+<li><i class="fa-solid fa-xmark"></i> 3h por dia fazendo conta e conferindo</li>
+<li><i class="fa-solid fa-xmark"></i> Estoque descontrolado, furto e perda</li>
+<li><i class="fa-solid fa-xmark"></i> Erro humano = prejuízo na certa</li>
+<li><i class="fa-solid fa-xmark"></i> Não funciona no celular na rua</li>
+<li><i class="fa-solid fa-xmark"></i> Sem relatórios, não sabe o lucro real</li>
+</ul>
+<div class="comp-result bad"><i class="fa-solid fa-arrow-trend-down"></i> - R$ 2.300/mês em perdas</div>
+</div>
+<div class="comp-col comp-good">
+<h4><i class="fa-solid fa-check"></i> DA SOFTWARE</h4>
+<ul>
+<li><i class="fa-solid fa-check"></i> WhatsApp automático, cliente nunca esquece</li>
+<li><i class="fa-solid fa-check"></i> 5 minutos pra fechar o caixa, tudo automático</li>
+<li><i class="fa-solid fa-check"></i> Estoque baixa sozinho, alerta de mínimo</li>
+<li><i class="fa-solid fa-check"></i> Lucro certo, sem erro, com relatório</li>
+<li><i class="fa-solid fa-check"></i> App no celular + PC, acessa de qualquer lugar</li>
+<li><i class="fa-solid fa-check"></i> Dashboard com tudo que precisa saber</li>
+</ul>
+<div class="comp-result good"><i class="fa-solid fa-arrow-trend-up"></i> + R$ 3.100/mês de lucro extra</div>
+</div>
+</div>
+<div class="comp-cta"><a href="#simulador"><i class="fa-solid fa-bolt"></i> Quero meu sistema profissional agora</a></div>
+</section>
+
+<section id="simulador" class="orcamento">
+<h2 data-aos="fade-up">Simule seu sistema agora</h2>
+<div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
+<div class="form-area" data-aos="fade-up">
+<div class="etapa active" id="etapa1">
+<h3><span>01</span> Descreva sua ideia</h3>
+<div class="grid-2">
+<div class="form-group"><label>Seu segmento</label><select id="negocio"><option>Mercado</option><option>Lava Jato</option><option>Oficina</option><option>Assistencia Tecnica</option><option>Restaurante</option><option>Clinica / Salao</option><option>Academia</option><option>Pet Shop</option><option>Auto Pecas</option><option>Farmacia</option><option>Escola</option><option>Transporte</option><option>Advocacia</option><option>Construtora</option><option>Startup</option><option>Outro</option></select></div>
+<div class="form-group"><label>Quantos usuários?</label><select id="usuarios"><option value="0">1 a 5 (incluso)</option><option value="10">3 a 5 (+R$ 10)</option><option value="20">6 a 10 (+R$ 20)</option><option value="30">10+ (+R$ 30)</option></select></div>
+</div>
+<div class="form-group">
+<label><i class="fa-solid fa-brain"></i> O que seu sistema precisa fazer?
+<button type="button" id="btnAudio" onclick="toggleGravacao()" style="float:right; background: linear-gradient(135deg,#00e5ff,#7b61ff); border:none; width:32px; height:32px; border-radius:50%; color:#fff; cursor:pointer;"><i class="fa-solid fa-microphone" id="iconMic"></i></button>
+</label>
+<textarea id="descricao" placeholder="EX: Tenho uma assistencia e perco controle dos celulares que entram. Preciso cadastrar cliente, aparelho, defeito, pecas, status WhatsApp automatico, caixa e lucro do mes...!"></textarea>
+<div id="audioStatus" style="display:none; color:#00e5ff; font-size:12px; margin-top:6px; font-weight:600;"><i class="fa-solid fa-circle" style="color:red; animation: pulse 1s infinite;"></i> Ouvindo... pode falar</div>
+<button class="btn-ia" onclick="interpretarIA()"><i class="fa-solid fa-wand-magic-sparkles"></i> Detectar Módulos Automaticamente</button>
+<div id="ia-result" class="ia-result"></div>
+</div>
+<button class="btn-gerar" onclick="nextEtapa(2)">Proximo <i class="fa-solid fa-arrow-right"></i></button>
+</div>
+<div class="etapa" id="etapa2">
+<h3><span>02</span> Módulos</h3>
+<button class="btn-selecionar-todos" onclick="selecionarTodos()"><i class="fa-solid fa-layer-group"></i> Selecionar Todos - <span>Mais completo, porém maior investimento</span></button>
+<div class="checks">
+<label class="check"><input type="checkbox" class="modulo" data-nome="Clientes e CRM"> <i class="fa-solid fa-users"></i> Clientes CRM <span class="price">+R$ 20</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="Estoque e Produtos"> <i class="fa-solid fa-boxes-stacked"></i> Estoque <span class="price">+R$ 20</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="Financeiro Completo"> <i class="fa-solid fa-coins"></i> Financeiro <span class="price">+R$ 30</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="Caixa PDV"> <i class="fa-solid fa-cash-register"></i> PDV <span class="price">+R$ 20</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="Ordens de Servico"> <i class="fa-solid fa-file-invoice"></i> Ordens <span class="price">+R$ 20</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="WhatsApp Automatico"> <i class="fa-brands fa-whatsapp"></i> WhatsApp <span class="price">+R$ 30</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="Agendamento"> <i class="fa-solid fa-calendar-check"></i> Agendamento <span class="price">+R$ 15</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="Dashboard e Relatorios"> <i class="fa-solid fa-chart-line"></i> Dashboard <span class="price">+R$ 20</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="App Android"> <i class="fa-brands fa-android"></i> App Android <span class="price">+R$ 40</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="App iOS"> <i class="fa-brands fa-apple"></i> App iOS <span class="price">+R$ 40</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="Multi-empresas"> <i class="fa-solid fa-building"></i> Multi-empresa <span class="price">+R$ 30</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="Nota Fiscal NFe"> <i class="fa-solid fa-file-invoice-dollar"></i> NFe <span class="price">+R$ 30</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="Delivery e iFood"> <i class="fa-solid fa-motorcycle"></i> Delivery <span class="price">+R$ 25</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="Comissoes"> <i class="fa-solid fa-percent"></i> Comissoes <span class="price">+R$ 10</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="Contratos"> <i class="fa-solid fa-file-contract"></i> Contratos <span class="price">+R$ 10</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="Chat Interno"> <i class="fa-solid fa-comments"></i> Chat <span class="price">+R$ 10</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="Assinatura Digital"> <i class="fa-solid fa-signature"></i> Assinatura <span class="price">+R$ 15</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="Fidelidade Cashback"> <i class="fa-solid fa-gift"></i> Fidelidade <span class="price">+R$ 15</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="Catalogo Online"> <i class="fa-solid fa-globe"></i> Catalogo <span class="price">+R$ 15</span></label>
+<label class="check"><input type="checkbox" class="modulo" data-nome="Backup Automatico"> <i class="fa-solid fa-cloud-arrow-up"></i> Backup <span class="price">+R$ 10</span></label>
+</div>
+<div class="nav-etapas"><button class="btn-voltar" onclick="nextEtapa(1)">Voltar</button><button class="btn-gerar" onclick="calcular(); nextEtapa(3)">Calcular Preço + Ver Projeto Final</button></div>
+</div>
+<div class="etapa" id="etapa3">
+<h3><span>03</span> Proposta Completa + Perdas/Ganhos</h3>
+<div class="resultado-grid">
+<div class="resultado">
+<p>ANÁLISE CONCLUÍDA</p>
+<h4 id="projetoNome">Sistema Personalizado</h4>
+<div class="valor" id="valor">R$ 160,00</div>
+<div id="parcelamento" style="color:#fff; font-weight:600; font-size:13px; margin:8px 0; background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,.15); padding:10px; border-radius:10px; text-align:center"><i class="fa-solid fa-credit-card"></i> Em até 12x no Cartão</div>
+<div id="descontoPix" style="color:#00ff88; font-weight:800; font-size:14px; background: rgba(0,255,136,0.15); border:1px solid #00ff88; padding:12px; border-radius:10px; margin:6px 0; text-align:center"></div>
+<p id="prazo"></p>
+<p id="economia" style="color:#00e5ff;margin-top:8px;font-weight:600"></p>
+<ul id="escopo" class="escopo-lista"></ul>
+</div>
+<div class="roi-area"><h4><i class="fa-solid fa-chart-line"></i> Retorno em 12 Meses</h4><canvas id="roiChart" width="400" height="250"></canvas><div class="roi-stats"><span>Sem Sistema: Perda de até 30% / Mês</span><span>Com Sistema: +R$ <b id="roiValor">0</b> / Mês</span></div></div>
+</div>
+<div class="lead-form" id="contato">
+<h4><i class="fa-solid fa-paper-plane"></i> Preencha e receba sua proposta completa. Após isso, vamos entrar em contato para fazer tudo do seu jeito.</h4>
+<div class="grid-2"><div class="form-group"><input type="text" id="leadNome" placeholder="Seu nome *"></div><div class="form-group"><input type="text" id="leadEmpresa" placeholder="Empresa"></div><div class="form-group"><input type="tel" id="leadWhatsapp" placeholder="WhatsApp *"></div><div class="form-group"><input type="email" id="leadEmail" placeholder="E-mail *"></div></div>
+<div class="form-group"><input type="text" id="leadCidade" placeholder="Sua cidade"></div>
+<button class="btn-gerar" onclick="enviarWhatsappComPDF()"><i class="fa-brands fa-whatsapp"></i> Solicitar Orçamento Via WhatsApp + Baixar PDF Com Proposta Completa </button>
+<button class="btn-voltar" style="width:100%;margin-top:10px" onclick="reiniciarSimulacao()"><i class="fa-solid fa-rotate-left"></i> Reiniciar Simulação</button>
+</div>
+</div>
+</div>
+</section>
+
+<section class="faq" data-aos="fade-up">
+<h2>Dúvidas Frequentes</h2>
+<div class="faq-grid">
+<div class="faq-item"><h4>O valor a partir de R$ 160 inclui tudo?</h4><p>Não. R$ 160 é a base. Cada módulo soma conforme tabela. Você paga só pelo que usar.</p></div>
+<div class="faq-item"><h4>Preciso descrever meu sistema?</h4><p>Não é obrigatório. Pode pular direto para os módulos. A descrição é opcional e ajuda a nossa IA a identificar o que você poderá precisar.</p></div>
+<div class="faq-item"><h4>Como funciona o prazo?</h4><p>Estimado conforme escopo. Projetos maiores levam mais tempo.</p></div>
+<div class="faq-item"><h4>Funciona no celular?</h4><p>Sim, PC e celular. Será de acordo com a forma com o que você precisará utilizar o seu sistema. Se marcar os módulos de App Android/IOS, iremos desenvolver um aplicativo do seu sistema para essas plataformas.</p></div>
+</div>
+</section>
+
+<footer>© 2026 DA Software - Simulador de Propostas para Sistemas/Programas</footer>
+
+<a href="#simulador" class="whatsapp-float"><i class="fa-brands fa-whatsapp"></i></a>
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="js/app.js?v=9999"></script>
+</body>
+</html>
