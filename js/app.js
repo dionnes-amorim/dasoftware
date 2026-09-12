@@ -12,19 +12,17 @@ const themeToggle=document.getElementById("themeToggle");
 function aplicarTema(t){ document.documentElement.setAttribute("data-theme",t); localStorage.setItem("theme",t); if(themeToggle) themeToggle.innerHTML=t==="light"?'<i class="fa-solid fa-moon"></i>':'<i class="fa-solid fa-sun"></i>'; }
 if(themeToggle) themeToggle.addEventListener("click",()=>{ const a=document.documentElement.getAttribute("data-theme")||"dark"; aplicarTema(a==="light"?"dark":"light"); });
 aplicarTema(localStorage.getItem("theme")||"dark");
-function abrirAdmin(){ document.getElementById("admin-login").classList.add("show"); }
-function logarAdmin(){ const s=document.getElementById("adminSenha").value; if(s===SENHA_ADMIN){ window.location.href="./painel-gerencial.html"; } else{ alert("Senha incorreta!"); } }
 function nextEtapa(n){ document.querySelectorAll(".etapa").forEach(e=>e.classList.remove("active")); document.getElementById("etapa"+n).classList.add("active"); etapaAtual=n; document.getElementById("progress").style.width=(n*33.3)+"%"; window.scrollTo({top:document.getElementById("simulador").offsetTop-80,behavior:"smooth"}); }
 function reiniciarSimulacao(){ document.querySelectorAll(".modulo").forEach(m=>m.checked=false); document.getElementById("descricao").value=""; document.getElementById("negocio").selectedIndex=0; document.getElementById("usuarios").selectedIndex=0; document.getElementById("leadNome").value=""; document.getElementById("leadEmpresa").value=""; document.getElementById("leadWhatsapp").value=""; document.getElementById("leadEmail").value=""; document.getElementById("leadCidade").value=""; document.getElementById("ia-result").style.display="none"; todosSelecionados=false; calcular(); nextEtapa(1); }
 function selecionarTodos(){ todosSelecionados=!todosSelecionados; document.querySelectorAll(".modulo").forEach(m=>m.checked=todosSelecionados); const btn=document.querySelector(".btn-selecionar-todos"); if(btn) btn.innerHTML=todosSelecionados?'<i class="fa-solid fa-xmark"></i> Desmarcar Todos':'<i class="fa-solid fa-layer-group"></i> Selecionar Todos - <span>Mais completo, porem maior investimento</span>'; calcular(); }
 function normalizar(s){ return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim(); }
 const MODULOS_INTELIGENTE = [
-  {nome:"Clientes e CRM", termos:["cliente","paciente","aluno","contato","crm","cadastro","ficha","caderno","planilha","perco cliente","nome telefone","lista cliente","anoto","cadernu"]},
-  {nome:"Estoque e Produtos", termos:["estoque","produto","peca","mercadoria","inventario","insumo","pecas","perco peca"]},
+  {nome:"Clientes e CRM", termos:["cliente","paciente","aluno","contato","crm","cadastro","ficha","caderno","planilha","perco cliente","nome telefone","lista cliente","anoto"]},
+  {nome:"Estoque e Produtos", termos:["estoque","produto","peca","mercadoria","inventario","insumo"]},
   {nome:"Financeiro Completo", termos:["financeiro","dinheiro","caixa","lucro","despesa","conta a pagar","conta a receber","fluxo de caixa","fechar caixa","quanto ganhei"]},
   {nome:"Caixa PDV", termos:["pdv","venda","balcao","frente de caixa","vender"]},
-  {nome:"Ordens de Servico", termos:["ordem","os","servico","aparelho","celular","defeito","conserto","oficina","manutencao","garantia","equipamento","veiculo","carro","moto","arrumar"]},
-  {nome:"WhatsApp Automatico", termos:["whats","zap","wpp","mensagem","avisar cliente","notificacao","cliente esquece","aviso automatico","mandar zap","wats","zapp"]},
+  {nome:"Ordens de Servico", termos:["ordem","os","servico","aparelho","celular","defeito","conserto","oficina","manutencao","garantia","equipamento","veiculo","carro"]},
+  {nome:"WhatsApp Automatico", termos:["whats","zap","wpp","mensagem","avisar cliente","notificacao","cliente esquece","aviso automatico","mandar zap"]},
   {nome:"Agendamento", termos:["agendamento","agenda","horario","marcar horario","reserva","consulta"]},
   {nome:"Dashboard e Relatorios", termos:["relatorio","dashboard","grafico","indicador","nao sei quanto","controle","organizar"]},
   {nome:"App Android", termos:["app","aplicativo","celular","mobile","android","na rua","fora da loja"]},
@@ -39,26 +37,17 @@ const MODULOS_INTELIGENTE = [
 function interpretarIA(){
   const raw=document.getElementById("descricao").value;
   const r=document.getElementById("ia-result");
-  if(!raw.trim()){
-    r.style.display="block";
-    r.innerHTML=`Descrição é opcional. Pode pular direto para os módulos.`;
-    return;
-  }
+  if(!raw.trim()){ r.style.display="block"; r.innerHTML=`Descrição é opcional. Pode pular direto para os módulos.`; return; }
   const t=normalizar(raw);
   let scores={};
-  MODULOS_INTELIGENTE.forEach(mod=>{
-    mod.termos.forEach(term=>{
-      if(t.includes(normalizar(term))) scores[mod.nome]=(scores[mod.nome]||0)+1;
-    });
-  });
-  if(t.match(/caderno|papel|planilha|perco|anoto|cadernu/)) scores["Clientes e CRM"]=(scores["Clientes e CRM"]||0)+2;
-  if(t.match(/esqueco|esquece|eskeco|avisar|aviso|lembrar|zap|zapp|wats|what/)) scores["WhatsApp Automatico"]=(scores["WhatsApp Automatico"]||0)+3;
+  MODULOS_INTELIGENTE.forEach(mod=>{ mod.termos.forEach(term=>{ if(t.includes(normalizar(term))) scores[mod.nome]=(scores[mod.nome]||0)+1; }); });
+  if(t.match(/caderno|papel|planilha|perco|anoto/)) scores["Clientes e CRM"]=(scores["Clientes e CRM"]||0)+2;
+  if(t.match(/esqueco|esquece|avisar|aviso|lembrar|zap|zapp|wats|what/)) scores["WhatsApp Automatico"]=(scores["WhatsApp Automatico"]||0)+3;
   let detectados=Object.entries(scores).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]);
   if(detectados.length===0) detectados=["Clientes e CRM","Dashboard e Relatorios"];
   document.querySelectorAll(".modulo").forEach(c=>c.checked=false);
   document.querySelectorAll(".modulo").forEach(c=>{ if(detectados.includes(c.dataset.nome)) c.checked=true; });
-  r.style.display="block";
-  r.innerHTML=`<strong>IA super inteligente detectou ${detectados.length} módulos:</strong><br>• ${detectados.join("<br>• ")}`;
+  r.style.display="block"; r.innerHTML=`<strong>IA detectou ${detectados.length} módulos:</strong><br>• ${detectados.join("<br>• ")}`;
   calcular();
 }
 function calcular(){
@@ -69,7 +58,9 @@ function calcular(){
   let valorComDesconto = Math.round(total * 0.9);
   document.getElementById("valor").innerText=total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
   const elParc = document.getElementById("parcelamento");
-  if(elParc) elParc.innerHTML=`<i class="fa-solid fa-credit-card"></i> Em até 12x de ${(total/12).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})} | <i class="fa-solid fa-bolt"></i> PIX 10% OFF: <b>${valorComDesconto.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</b>`;
+  if(elParc) elParc.innerHTML=`<i class="fa-solid fa-credit-card"></i> Em até 12x no cartão`;
+  const elPix = document.getElementById("descontoPix");
+  if(elPix) elPix.innerHTML=`<i class="fa-solid fa-bolt"></i> PIX com 10% OFF: <b>${valorComDesconto.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</b>`;
   let prazo=total<=200?"5 a 10 dias":total<=300?"10 a 15 dias":total<=400?"15 a 25 dias":"25 a 40 dias";
   document.getElementById("prazo").innerHTML=`<strong>Prazo:</strong> ${prazo} | <strong>Modulos:</strong> ${mods.length}`;
   document.getElementById("projetoNome").innerText=document.getElementById("negocio").value+" - Personalizado";
@@ -104,26 +95,22 @@ async function gerarPDFBlob(){
   doc.text(`Cliente: ${document.getElementById("leadNome").value} ${document.getElementById("leadEmpresa").value? "- " + document.getElementById("leadEmpresa").value : ""}`,15,38);
   doc.text(`Segmento: ${document.getElementById("negocio").value} | Data: ${new Date().toLocaleDateString("pt-BR")}`,15,42);
   doc.text(`Contato: ${document.getElementById("leadWhatsapp").value} | ${document.getElementById("leadEmail").value} | ${document.getElementById("leadCidade").value}`,15,46);
-
-  // CAIXA DE INVESTIMENTO NOVA - CORRIGIDA
   let valorTotal = valorProjeto;
   let valorPix = Math.round(valorTotal * 0.9);
   let parcela = (valorTotal/12).toFixed(2).replace('.',',');
-
   doc.setFillColor(16,22,42); doc.roundedRect(15,50,W-30,26,3,3,"F");
-  doc.setTextColor(0,229,255); doc.setFontSize(8); doc.setFont("helvetica","bold"); doc.text("INVESTIMENTO CONFORME SISTEMA MONTADO INICIALMENTE",18,56);
+  doc.setTextColor(0,229,255); doc.setFontSize(8); doc.setFont("helvetica","bold"); doc.text("INVESTIMENTO",18,56);
   doc.setTextColor(255,255,255); doc.setFontSize(22); doc.text(`${valorTotal.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}`,18,66);
   doc.setFontSize(8); doc.setFont("helvetica","normal"); doc.setTextColor(180,200,220);
-  doc.text(`Cartao em ate 12x de R$ ${parcela}`, 95, 60);
+  doc.text(`Em ate 12x no cartao`, 95, 60);
   doc.setFontSize(9); doc.setFont("helvetica","bold"); doc.setTextColor(0,255,136);
-  doc.text(`PIX A VISTA 10% OFF: ${valorPix.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}`, 95, 65);
-
+  doc.text(`PIX 10% OFF: ${valorPix.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}`, 95, 65);
   doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont("helvetica","bold"); doc.text(`Prazo: ${document.getElementById("prazo").innerText}`,15,82);
-  doc.setFontSize(9); doc.setFont("helvetica","bold"); doc.text("Descricao do Cliente:",15,88);
+  doc.setFontSize(9); doc.setFont("helvetica","bold"); doc.text("Descricao:",15,88);
   doc.setFontSize(8); doc.setFont("helvetica","normal"); doc.setTextColor(200,200,200);
   let descLinhas=doc.splitTextToSize(document.getElementById("descricao").value || "Cliente optou por escolher modulos manualmente", W-30);
   doc.text(descLinhas,15,92); let y=92+descLinhas.length*4+6;
-  doc.setFontSize(9); doc.setFont("helvetica","bold"); doc.setTextColor(255,255,255); doc.text("Escopo Incluido:",15,y); y+=6;
+  doc.setFontSize(9); doc.setFont("helvetica","bold"); doc.setTextColor(255,255,255); doc.text("Escopo:",15,y); y+=6;
   doc.setFontSize(8); doc.setFont("helvetica","normal");
   document.querySelectorAll(".modulo:checked").forEach(m=>{
     let preco=getPrecoModulo(m.dataset.nome);
@@ -131,7 +118,6 @@ async function gerarPDFBlob(){
     doc.setFillColor(23,32,51); doc.roundedRect(15,y-3,W-30,8,2,2,"F");
     doc.setTextColor(230,230,255); doc.text(`- ${m.dataset.nome} (+R$ ${preco})`,18,y+1); y+=10;
   });
-  if(y>H-60){ doc.addPage(); doc.setFillColor(5,8,22); doc.rect(0,0,W,H,"F"); y=15; }
   doc.addPage(); doc.setFillColor(5,8,22); doc.rect(0,0,W,H,"F"); doc.setFillColor(0,229,255); doc.rect(0,0,W,7,"F");
   doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont("helvetica","bold"); doc.text("ANALISE - RETORNO ESTIMADO",15,16);
   doc.setFontSize(8); doc.setFont("helvetica","normal"); doc.setTextColor(180,180,200); doc.text(`${document.getElementById("prazo").innerText}`,15,22);
@@ -147,7 +133,7 @@ async function enviarWhatsappComPDF(){
   let esc=""; document.querySelectorAll(".modulo:checked").forEach(m=>{ esc+=`> ${m.dataset.nome} (+R$ ${getPrecoModulo(m.dataset.nome)})\n`; });
   const valor=document.getElementById("valor").innerText;
   const valorComDesc=Math.round(valorProjeto*0.9).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-  const msg="*NOVA SOLICITACAO - DA SOFTWARE*\n--------------------------------\n\n*Cliente:* "+document.getElementById("leadNome").value+"\n*Empresa:* "+(document.getElementById("leadEmpresa").value||'Nao informou')+"\n*Cidade:* "+(document.getElementById("leadCidade").value||'Nao informou')+"\n\n*PROJETO:*\nSegmento: "+document.getElementById("negocio").value+"\nInvestimento: *"+valor+"*\nCartao em ate 12x | PIX 10% OFF: *"+valorComDesc+"*\n"+document.getElementById("prazo").innerText+"\n\n*MODULOS:*\n"+(esc||"- Sistema base R$ 160\n")+"\n*NECESSIDADE:*\n"+(document.getElementById("descricao").value||"Quero um sistema sob medida")+"\n\n*CONTATOS:*\nWhatsApp: "+document.getElementById("leadWhatsapp").value+"\nEmail: "+document.getElementById("leadEmail").value;
+  const msg="*NOVA SOLICITACAO - DA SOFTWARE*\n--------------------------------\n\n*Cliente:* "+document.getElementById("leadNome").value+"\n*Empresa:* "+(document.getElementById("leadEmpresa").value||'Nao informou')+"\n*Cidade:* "+(document.getElementById("leadCidade").value||'Nao informou')+"\n\n*PROJETO:*\nSegmento: "+document.getElementById("negocio").value+"\nInvestimento: *"+valor+"*\nEm ate 12x no cartao | PIX 10% OFF: *"+valorComDesc+"*\n"+document.getElementById("prazo").innerText+"\n\n*MODULOS:*\n"+(esc||"- Sistema base R$ 160\n")+"\n*NECESSIDADE:*\n"+(document.getElementById("descricao").value||"Quero um sistema sob medida")+"\n\n*CONTATOS:*\nWhatsApp: "+document.getElementById("leadWhatsapp").value+"\nEmail: "+document.getElementById("leadEmail").value;
   window.open(`https://wa.me/${WHATSAPP_NUM}?text=${encodeURIComponent(msg)}`,"_blank");
 }
 let recognition=null, gravando=false; let textoAcumulado="";
