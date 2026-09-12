@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
   try{ particlesJS("particles-js",{particles:{number:{value:80},color:{value:["#00e5ff","#7b61ff"]},shape:{type:"circle"},opacity:{value:0.5,random:true},size:{value:3,random:true},line_linked:{enable:true,distance:150,color:"#ffffff",opacity:0.15,width:1},move:{enable:true,speed:1.2,random:true}}}); }catch(e){}
 });
 const WHATSAPP_NUM="5517997474065";
-const SENHA_ADMIN="admin123";
 let valorProjeto=160, etapaAtual=1, roiChart=null, logoBase64=null, notificacaoAtual=null, todosSelecionados=false;
 const TABELA_PRECOS = {"Clientes e CRM":20,"Estoque e Produtos":20,"Financeiro Completo":30,"Caixa PDV":20,"Ordens de Servico":20,"WhatsApp Automatico":30,"Agendamento":15,"Dashboard e Relatorios":20,"App Android":40,"App iOS":40,"Multi-empresas":30,"Nota Fiscal NFe":30,"Delivery e iFood":25,"Comissoes":10,"Contratos":10,"Chat Interno":10,"Assinatura Digital":15,"Fidelidade Cashback":15,"Catalogo Online":15,"Backup Automatico":10};
 function getPrecoModulo(nome){ return TABELA_PRECOS[nome]!== undefined? TABELA_PRECOS[nome] : 15; }
