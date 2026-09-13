@@ -49,7 +49,7 @@ body{background:#050816;color:#fff;padding:20px 20px 120px 20px;overflow-x:hidde
 <body>
 <div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Verificando login...</div>
 <div class="top">
-<div><h1><i class="fa-solid fa-table-columns"></i> PAINEL GERENCIAL</h1><p style="opacity:.5;font-size:12px">Gerenciar Montagem/Vendas</p></div>
+<div><h1><i class="fa-solid fa-table-columns"></i> PAINEL GERENCIAL</h1><p style="opacity:.5;font-size:12px">Base R$ 160 + PIX 10% OFF</p></div>
 <div style="display:flex;gap:8px">
 <button class="btn btn-outline" onclick="location.href='./index.html'"><i class="fa-solid fa-house"></i> Site</button>
 <button class="btn btn-outline" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
@@ -64,7 +64,7 @@ body{background:#050816;color:#fff;padding:20px 20px 120px 20px;overflow-x:hidde
 </div>
 <div id="iaPrecifica" class="ia-box" style="display:none"><h4><i class="fa-solid fa-robot"></i> IA Precificação</h4><p id="iaTexto" style="font-size:12px;opacity:.8;margin-top:6px"></p></div>
 <div id="followBanner" class="followup-banner"><div><i class="fa-solid fa-bell"></i> <b id="followCount">0</b> leads parados +2h! <small id="followLista" style="display:block;opacity:.8;font-size:11px"></small></div><button class="btn btn-success" onclick="enviarFollowupMassa()"><i class="fa-brands fa-whatsapp"></i> Follow-up</button></div>
-<div class="search-bar"><input id="busca" placeholder="Buscar..." oninput="renderKanban()"></div>
+<div class="search-bar"><input id="busca" placeholder="Buscar nome, empresa, cidade..." oninput="renderKanban()"></div>
 <div class="kanban" id="kanbanBoard"></div>
 <div id="zonaDeletar" class="zona-deletar" ondrop="dropDeletar(event)" ondragover="event.preventDefault(); this.classList.add('over')" ondragleave="this.classList.remove('over')"><i class="fa-solid fa-trash"></i> ARRASTE PARA DELETAR</div>
 <div id="modalLead" class="modal" onclick="if(event.target.id==='modalLead') fecharModal()"><div class="modal-content"><h3 id="mNome"></h3><p id="mEmpresa" style="opacity:.6;font-size:12px;margin-bottom:10px"></p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><small>WhatsApp</small><br><a id="mZap" target="_blank" style="color:#25d366;font-weight:700;text-decoration:none"></a></div><div><small>Valor</small><br><b id="mValor" style="color:#00ff88"></b> <span id="mLucroBadge"></span></div><div><small>Cidade</small><br><span id="mCidade"></span></div><div><small>Segmento</small><br><span id="mNegocio" class="tag"></span></div></div><div style="margin-top:10px"><small>Escopo</small><div id="mEscopo" style="font-size:11px;background:#0a0e1f;padding:10px;border-radius:10px;margin-top:4px"></div></div><div id="iaSugestao" style="margin-top:10px;background:rgba(123,97,255,.15);border:1px dashed #7b61ff;padding:10px;border-radius:10px;font-size:11px;display:none"></div><hr style="margin:12px 0;border-color:rgba(255,255,255,.1)"><select id="mStatus" onchange="trocarStatus()"><option>Nova</option><option>Em Analise</option><option>Aprovada</option><option>Em Execucao</option><option>Finalizada</option><option>Entregue</option><option>Negada</option></select><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="mProxContato" type="date" onchange="salvarEdicao()"><input id="mCusto" type="number" placeholder="Custo R$" onchange="salvarEdicao()"></div><input id="mMotivo" placeholder="Motivo Perda" onchange="salvarEdicao()"><div id="listaNotas" style="margin-top:12px"></div><textarea id="novaNota" rows="2" placeholder="Nova nota..."></textarea><button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="addNota()">+ Nota</button><div style="display:flex;gap:6px;margin-top:12px"><button class="btn btn-outline" onclick="enviarTpl('proposta')">Proposta</button><button class="btn btn-outline" onclick="enviarTpl('follow')">Insistir</button><button class="btn btn-outline" onclick="enviarTpl('sinal')">Sinal $</button><button class="btn btn-outline" onclick="enviarTpl('entrega')">Entregue</button></div><div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn-outline" style="flex:1" onclick="fecharModal()">Fechar</button><button class="btn btn-danger" style="flex:1" onclick="deletarAtual()">Deletar</button></div></div></div>
@@ -75,25 +75,27 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://ecrpiuhsbhuqcxbbpqfh.supabase.co";
 const SUPABASE_KEY = "sb_publishable_I7Hw7KieW3VNFqb9LYrFoQ_tFWWABwl";
 
+// CORREÇÃO PRINCIPAL: sessionStorage = pede login quando fecha aba, mas mantém se der F5
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+  auth: {
+    storage: window.sessionStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false
+  }
 });
 
-// Verifica login UMA VEZ SÓ
 const { data: { session } } = await supabase.auth.getSession();
 if(!session){ window.location.href='./login.html'; }
 document.getElementById('loader').style.display='none';
 window.supabase = supabase;
-window.logout = async () => { await supabase.auth.signOut(); location.href='./login.html'; }
-
-// Desloga quando fechar/recarregar
-window.addEventListener('pagehide', () => { supabase.auth.signOut(); });
+window.logout = async () => { await supabase.auth.signOut(); location.href='./login.html'; };
 
 let leads=[], leadAtual=null, dragIdx=null, leadPerdaTemp=null;
 function parseValorBR(v){ if(!v) return 0; let s=v.toString().replace(/R\$/gi,"").trim(); if(s.includes(",")&&s.includes(".")){ s=s.replace(/\./g,"").replace(",","."); } else if(s.includes(",")){ s=s.replace(",","."); } let n=parseFloat(s); if(isNaN(n)){ n=parseFloat(v.toString().replace(/[^\d]/g,""))/100; } return n||0; }
 async function atualizarBanco(l){
   const { error } = await supabase.from('leads').update({ status:l.status, custo:l.custo||0, prox_contato:l.proxContato||null, motivo_perda:l.motivoPerda||null, notas:l.notas||[] }).eq('id', l.id);
-  if(error){ alert("Erro salvar: "+error.message); console.error(error); }
+  if(error){ alert("Erro salvar: "+error.message); console.error(error); } else { console.log("Salvo OK", l.status); }
 }
 window.carregar = async () => {
   const { data, error } = await supabase.from('leads').select('*').order('id', {ascending:false});
@@ -124,7 +126,7 @@ window.trocarStatus=async()=>{const novo=document.getElementById("mStatus").valu
 window.salvarEdicao=async()=>{if(leadAtual===null) return; leads[leadAtual].status=document.getElementById("mStatus").value; leads[leadAtual].proxContato=document.getElementById("mProxContato").value; leads[leadAtual].custo=Number(document.getElementById("mCusto").value)||0; leads[leadAtual].motivoPerda=document.getElementById("mMotivo").value; renderKanban(); await atualizarBanco(leads[leadAtual]);}
 window.addNota=async()=>{const txt=document.getElementById("novaNota").value.trim(); if(!txt||leadAtual===null) return; leads[leadAtual].notas=leads[leadAtual].notas||[]; leads[leadAtual].notas.push({data:new Date().toLocaleString("pt-BR"), texto:txt}); document.getElementById("novaNota").value=""; abrir(leadAtual); await atualizarBanco(leads[leadAtual]);}
 window.deletarAtual=async()=>{if(leadAtual===null||!confirm("Deletar?")) return; const id=leads[leadAtual].id; leads.splice(leadAtual,1); fecharModal(); renderKanban(); await supabase.from('leads').delete().eq('id', id);}
-window.enviarTpl=(tipo)=>{if(leadAtual===null) return; const l=leads[leadAtual]; let msg=""; if(tipo==="proposta") msg=`Ola ${l.nome}! Sua proposta ${l.valor} ${l.negocio} pronta. Em ate 12x ou PIX 10% OFF.`; if(tipo==="follow") msg=`Ola ${l.nome}! Viu que simulou ${l.negocio} por ${l.valor}?`; if(tipo==="sinal") msg=`${l.nome}, sinal 50% de ${l.valor} pra comecar ${l.negocio}. PIX:`; if(tipo==="entrega") msg=`${l.nome}, seu sistema ${l.negocio} entregue!`; window.open(`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,"_blank");}
+window.enviarTpl=(tipo)=>{if(leadAtual===null) return; const l=leads[leadAtual]; let msg=""; if(tipo==="proposta") msg=`Ola ${l.nome}! Sua proposta ${l.valor} ${l.negocio} pronta. Em ate 12x ou PIX 10% OFF.`; if(tipo==="follow") msg=`Ola ${l.nome}! Viu que simulou ${l.negocio} por ${l.valor}?`; if(tipo==="sinal") msg=`${l.nome}, sinal 50% de ${l.valor} pra comecar ${l.negocio}.`; if(tipo==="entrega") msg=`${l.nome}, seu sistema ${l.negocio} entregue!`; window.open(`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,"_blank");}
 window.verificarFollowup=()=>{let parados=leads.filter(l=>!["Entregue","Finalizada","Negada"].includes(l.status)); if(parados.length>0){document.getElementById("followBanner").classList.add("show"); document.getElementById("followCount").innerText=parados.length;} else {document.getElementById("followBanner").classList.remove("show");}}
 window.enviarFollowupMassa=()=>{let parados=leads.filter(l=>!["Entregue","Finalizada","Negada"].includes(l.status)); parados.slice(0,5).forEach(l=>{let msg=`Ola ${l.nome}! 10% OFF no PIX hoje se fechar ${l.negocio}`; window.open(`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,"_blank");});}
 window.calcularIAPrecificacao=()=>{const box=document.getElementById("iaPrecifica"); const txt=document.getElementById("iaTexto"); if(leads.length<5){box.style.display="none"; return;} let porSeg={}; leads.forEach(l=>{if(!porSeg[l.negocio]) porSeg[l.negocio]=[]; porSeg[l.negocio].push(parseValorBR(l.valor));}); let mais=""; let maior=0; for(let s in porSeg){let m=porSeg[s].reduce((a,b)=>a+b,0)/porSeg[s].length; if(m>maior){maior=m; mais=s;}} box.style.display="block"; txt.innerHTML=`Mais lucrativo: <b>${mais}</b> média ${maior.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}`;}
