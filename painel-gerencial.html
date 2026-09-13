@@ -44,15 +44,15 @@ body{background:#050816;color:#fff;padding:20px 20px 120px 20px;overflow-x:hidde
 .zona-deletar.over{transform:translateX(-50%) scale(1.05);background:#ff0000}
 @keyframes pulseLixeira{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.03)}}
 ::-webkit-scrollbar{height:8px}::-webkit-scrollbar-thumb{background:#1e2a4a;border-radius:10px}
-#loader{position:fixed;inset:0;background:#050816;display:flex;align-items:center;justify-content:center;z-index:10000}
+#loader{position:fixed;inset:0;background:#050816;display:flex;align-items:center;justify-content:center;z-index:10000;flex-direction:column;gap:10px}
 </style>
 </head>
 <body>
 
-<div id="loader"><i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Verificando login...</div>
+<div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Verificando login...<small style="opacity:.5">Se travar, limpe o cache</small></div>
 
 <div class="top">
-<div><h1><i class="fa-solid fa-table-columns"></i> PAINEL GERENCIAL</h1><p style="opacity:.5;font-size:12px">DA Software - Seguro</p></div>
+<div><h1><i class="fa-solid fa-table-columns"></i> PAINEL GERENCIAL</h1><p style="opacity:.5;font-size:12px">DA Software - Base R$ 160 + PIX 10% OFF</p></div>
 <div style="display:flex;gap:8px">
 <button class="btn btn-outline" onclick="location.href='./index.html'"><i class="fa-solid fa-house"></i> Site</button>
 <button class="btn btn-outline" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
@@ -63,8 +63,8 @@ body{background:#050816;color:#fff;padding:20px 20px 120px 20px;overflow-x:hidde
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px">
 <div class="card"><h3 id="totalLeads">0</h3><small style="opacity:.5">Total de Projetos</small></div>
 <div class="card"><h3 id="totalValor" style="color:#00ff88">R$ 0</h3><small style="opacity:.5">Valor Total (Potencial)</small></div>
-<div class="card" style="border-color:#00ff88"><h3 id="totalLucroReal" style="color:#00ff88">R$ 0</h3><small style="opacity:.5">LUCRO (Projetos Entregues)</small></div>
-<div class="card"><h3 id="totalAtrasados" style="color:#ff3b3b">0</h3><small style="opacity:.5">Projetos Atrasados</small></div>
+<div class="card" style="border-color:#00ff88"><h3 id="totalLucroReal" style="color:#00ff88">R$ 0</h3><small style="opacity:.5">LUCRO (Entregues)</small></div>
+<div class="card"><h3 id="totalAtrasados" style="color:#ff3b3b">0</h3><small style="opacity:.5">Atrasados</small></div>
 </div>
 
 <div id="iaPrecifica" class="ia-box" style="display:none">
@@ -73,7 +73,7 @@ body{background:#050816;color:#fff;padding:20px 20px 120px 20px;overflow-x:hidde
 </div>
 
 <div id="followBanner" class="followup-banner">
-<div><i class="fa-solid fa-bell"></i> <b id="followCount">0</b> leads parados há +2h sem resposta! <small id="followLista" style="display:block;opacity:.8;font-size:11px"></small></div>
+<div><i class="fa-solid fa-bell"></i> <b id="followCount">0</b> leads parados há +2h! <small id="followLista" style="display:block;opacity:.8;font-size:11px"></small></div>
 <button class="btn btn-success" onclick="enviarFollowupMassa()"><i class="fa-brands fa-whatsapp"></i> Follow-up em massa</button>
 </div>
 
@@ -100,17 +100,17 @@ body{background:#050816;color:#fff;padding:20px 20px 120px 20px;overflow-x:hidde
 <option>Nova</option><option>Em Analise</option><option>Aprovada</option><option>Em Execucao</option><option>Finalizada</option><option>Entregue</option><option>Negada</option>
 </select>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-<input id="mProxContato" type="date" onchange="salvarEdicao()"><input id="mCusto" type="number" placeholder="Custo Adicional (R$)" onchange="salvarEdicao()">
+<input id="mProxContato" type="date" onchange="salvarEdicao()"><input id="mCusto" type="number" placeholder="Custo (R$)" onchange="salvarEdicao()">
 </div>
-<input id="mMotivo" placeholder="Motivo Perda (Obrigatório se Negada)" onchange="salvarEdicao()">
+<input id="mMotivo" placeholder="Motivo Perda" onchange="salvarEdicao()">
 <div id="listaNotas" style="margin-top:12px"></div>
 <textarea id="novaNota" rows="2" placeholder="Nova nota..."></textarea>
 <button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="addNota()">+ Adicionar Nota</button>
 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px">
 <button class="btn btn-outline" onclick="enviarTpl('proposta')">Proposta</button>
 <button class="btn btn-outline" onclick="enviarTpl('follow')">Insistir</button>
-<button class="btn btn-outline" onclick="enviarTpl('sinal')">Solicitar Adiantamento $</button>
-<button class="btn btn-outline" onclick="enviarTpl('entrega')">Finalizado</button>
+<button class="btn btn-outline" onclick="enviarTpl('sinal')">Sinal $</button>
+<button class="btn btn-outline" onclick="enviarTpl('entrega')">Entregue</button>
 </div>
 <div style="display:flex;gap:8px;margin-top:16px">
 <button class="btn btn-outline" style="flex:1" onclick="fecharModal()">Fechar</button>
@@ -122,18 +122,18 @@ body{background:#050816;color:#fff;padding:20px 20px 120px 20px;overflow-x:hidde
 <div id="modalPerda" class="modal">
 <div class="modal-content" style="text-align:center;border-color:#ff3b3b">
 <h3 style="color:#ff3b3b"><i class="fa-solid fa-triangle-exclamation"></i> Por que perdeu?</h3>
-<p style="font-size:12px;opacity:.7;margin:8px 0">Obrigatório para mover para Negada.</p>
+<p style="font-size:12px;opacity:.7;margin:8px 0">Obrigatório para Negada.</p>
 <select id="motivoSelect" style="margin-top:10px">
 <option value="">Selecione...</option>
 <option>Valor alto</option>
 <option>Demorou responder</option>
 <option>Concorrente mais barato</option>
-<option>Sem dinheiro no momento</option>
-<option>Só curioso / pesquisando</option>
+<option>Sem dinheiro</option>
+<option>Só curioso</option>
 <option>Outro</option>
 </select>
-<input id="motivoObs" placeholder="Detalhe extra (opcional)">
-<button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="confirmarPerda()">Confirmar Perda</button>
+<input id="motivoObs" placeholder="Detalhe extra">
+<button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="confirmarPerda()">Confirmar</button>
 <button class="btn btn-outline" style="width:100%;margin-top:6px" onclick="cancelarPerda()">Cancelar</button>
 </div>
 </div>
@@ -145,20 +145,13 @@ const SUPABASE_URL = "https://ecrpiuhsbhuqcxbbpqfh.supabase.co";
 const SUPABASE_KEY = "sb_publishable_I7Hw7KieW3VNFqb9LYrFoQ_tFWWABwl";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- BLOQUEIO DE SEGURANÇA ---
 const { data: { session } } = await supabase.auth.getSession();
-if(!session){
-  window.location.href='./login.html';
-}
+if(!session){ window.location.href='./login.html'; }
 document.getElementById('loader').style.display='none';
 window.supabase = supabase;
 
-window.logout = async () => {
-  await supabase.auth.signOut();
-  location.href='./login.html';
-}
+window.logout = async () => { await supabase.auth.signOut(); location.href='./login.html'; }
 
-// --- LOGICA DO PAINEL SEGURA ---
 let leads=[], leadAtual=null, dragIdx=null, leadPerdaTemp=null, statusAnterior=null;
 
 function parseValorBR(v){
@@ -170,10 +163,28 @@ function parseValorBR(v){
   return n||0;
 }
 
+async function atualizarBanco(l){
+  console.log("Salvando lead", l.id, "status:", l.status);
+  const payload = {
+    status: l.status,
+    custo: l.custo || 0,
+    prox_contato: l.proxContato || null,
+    motivo_perda: l.motivoPerda || null,
+    notas: l.notas || []
+  };
+  const { error } = await supabase.from('leads').update(payload).eq('id', l.id);
+  if(error){
+    alert("ERRO AO SALVAR: " + error.message + "\n\nVá no Supabase > Table Editor > leads e veja se as colunas status, custo, prox_contato, motivo_perda, notas existem. Se não, rode o SQL que te mandei.");
+    console.error(error);
+  } else {
+    console.log("Salvo OK!");
+  }
+}
+
 window.carregar = async () => {
   const { data, error } = await supabase.from('leads').select('*').order('id', {ascending:false});
-  if(error){ alert("Erro ao carregar: "+error.message); return; }
-  leads = data.map(l=>({...l, notas:l.notas||[], custo:l.custo||0, proxContato:l.proxContato||l.prox_contato||"", status:l.status||"Nova"}));
+  if(error){ alert("Erro carregar: "+error.message); return; }
+  leads = data.map(l=>({...l, notas:l.notas||[], custo:l.custo||0, proxContato:l.proxContato||l.prox_contato||"", status:l.status||"Nova", motivoPerda:l.motivoPerda||l.motivo_perda||""}));
   renderKanban(); verificarFollowup(); calcularIAPrecificacao();
 }
 
@@ -222,7 +233,7 @@ window.dropDeletar = async (e)=>{
   e.preventDefault(); if(dragIdx===null) return;
   if(!confirm(`Deletar ${leads[dragIdx].nome}?`)){ dragEnd(); dragIdx=null; return; }
   const id=leads[dragIdx].id; leads.splice(dragIdx,1); renderKanban(); dragEnd(); dragIdx=null;
-  if(id){ await supabase.from('leads').delete().eq('id', id); }
+  if(id){ const {error}=await supabase.from('leads').delete().eq('id', id); if(error) alert("Erro deletar: "+error.message); }
 }
 window.abrir = (idx)=>{
   leadAtual=idx; const l=leads[idx];
@@ -230,7 +241,7 @@ window.abrir = (idx)=>{
   document.getElementById("mZap").innerText=l.whatsapp||''; document.getElementById("mZap").href=`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}`;
   document.getElementById("mValor").innerText=l.valor||''; document.getElementById("mCidade").innerText=l.cidade||''; document.getElementById("mNegocio").innerText=l.negocio||'';
   document.getElementById("mEscopo").innerText=l.escopo||l.descricao||''; document.getElementById("mStatus").value=l.status||'Nova';
-  document.getElementById("mProxContato").value=l.proxContato||''; document.getElementById("mCusto").value=l.custo||''; document.getElementById("mMotivo").value=l.motivoPerda||l.motivo_perda||'';
+  document.getElementById("mProxContato").value=l.proxContato||''; document.getElementById("mCusto").value=l.custo||''; document.getElementById("mMotivo").value=l.motivoPerda||'';
   const lucro=parseValorBR(l.valor)-(Number(l.custo)||0);
   document.getElementById("mLucroBadge").innerHTML=l.status==="Entregue"?`<span class="lucro-real">Lucro Real: R$ ${lucro.toLocaleString("pt-BR")}</span>`:"";
   let qtd=leads.filter(x=>x.negocio===l.negocio&&x.status==="Entregue").length;
@@ -253,11 +264,7 @@ window.trocarStatus = async ()=>{
 }
 window.salvarEdicao = async ()=>{ if(leadAtual===null) return; leads[leadAtual].status=document.getElementById("mStatus").value; leads[leadAtual].proxContato=document.getElementById("mProxContato").value; leads[leadAtual].custo=Number(document.getElementById("mCusto").value)||0; leads[leadAtual].motivoPerda=document.getElementById("mMotivo").value; renderKanban(); await atualizarBanco(leads[leadAtual]); }
 window.addNota = async ()=>{ const txt=document.getElementById("novaNota").value.trim(); if(!txt||leadAtual===null) return; leads[leadAtual].notas=leads[leadAtual].notas||[]; leads[leadAtual].notas.push({data:new Date().toLocaleString("pt-BR"), texto:txt}); document.getElementById("novaNota").value=""; abrir(leadAtual); await atualizarBanco(leads[leadAtual]); }
-window.deletarAtual = async ()=>{ if(leadAtual===null||!confirm("Deletar?")) return; const id=leads[leadAtual].id; leads.splice(leadAtual,1); fecharModal(); renderKanban(); await supabase.from('leads').delete().eq('id', id); }
-async function atualizarBanco(l){
-  const { error } = await supabase.from('leads').update({status:l.status, custo:l.custo, prox_contato:l.proxContato, motivo_perda:l.motivoPerda, notas:l.notas}).eq('id', l.id);
-  if(error) console.error(error);
-}
+window.deletarAtual = async ()=>{ if(leadAtual===null||!confirm("Deletar?")) return; const id=leads[leadAtual].id; leads.splice(leadAtual,1); fecharModal(); renderKanban(); const {error}=await supabase.from('leads').delete().eq('id', id); if(error) alert("Erro deletar: "+error.message); }
 window.enviarTpl = (tipo)=>{ if(leadAtual===null) return; const l=leads[leadAtual]; let msg=""; if(tipo==="proposta") msg=`Ola ${l.nome}! Sua proposta de ${l.valor} para ${l.negocio} esta pronta. Posso enviar o PDF?`; if(tipo==="follow") msg=`Ola ${l.nome}! Viu que simulou ${l.negocio} por ${l.valor} mas nao fechamos. Ficou com duvida no valor?`; if(tipo==="sinal") msg=`${l.nome}, pra comecar seu sistema ${l.negocio} preciso de 50% de sinal de ${l.valor}. PIX: SEU_PIX`; if(tipo==="entrega") msg=`${l.nome}, seu sistema ${l.negocio} foi entregue!`; window.open(`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,"_blank"); }
 window.verificarFollowup = ()=>{
   const agora=new Date(); let parados=leads.filter(l=>{
