@@ -30,7 +30,7 @@ body{background:#050816;color:#fff;padding:20px 20px 120px 20px;overflow-x:hidde
 .valor{color:#00ff88;font-weight:700;font-size:12px}
 .lucro-real{font-size:10px;color:#00ff88;background:rgba(0,255,136,.1);padding:2px 6px;border-radius:6px;margin-left:6px}
 .atrasado{border-left:4px solid #ff3b3b!important;animation:piscar 1s infinite}
-@keyframes piscar{0%,100%{border-left-color:#ff3b3b;box-shadow:0 0 0 rgba(255,59,59,0)}50%{border-left-color:#ff0000;box-shadow:0 0 15px rgba(255,59,59,.5)}}
+@keyframes piscar{0%,100%{border-left-color:#ff3b3b}50%{border-left-color:#ff0000}}
 .followup-banner{background:linear-gradient(135deg,#ff8c00,#ffb700);color:#000;padding:12px 16px;border-radius:12px;margin-bottom:14px;display:none;justify-content:space-between;align-items:center;gap:12px}
 .followup-banner.show{display:flex}
 .ia-box{background:linear-gradient(135deg,#10162A,#1a1440);border:1px solid #7b61ff;border-radius:14px;padding:14px;margin-bottom:14px}
@@ -39,255 +39,96 @@ body{background:#050816;color:#fff;padding:20px 20px 120px 20px;overflow-x:hidde
 .modal-content{background:#10162A;border:1px solid rgba(0,229,255,.3);border-radius:20px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow:auto}
 .modal-content input,.modal-content textarea,.modal-content select{width:100%;background:#0a0e1f;border:1px solid rgba(255,255,255,.1);color:#fff;padding:12px;border-radius:10px;margin:6px 0;outline:none}
 .note-item{background:#0a0e1f;padding:10px;border-radius:10px;margin:8px 0;font-size:11px;border-left:3px solid #00e5ff}
-.zona-deletar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);width:90%;max-width:500px;background:linear-gradient(135deg,#ff3b3b,#ff0000);border:2px dashed rgba(255,255,255,.5);border-radius:16px;padding:20px;text-align:center;font-weight:700;letter-spacing:1px;z-index:9998;display:none;transition:.2s;box-shadow:0 10px 30px rgba(255,0,0,.4)}
-.zona-deletar.show{display:block;animation:pulseLixeira 1s infinite}
-.zona-deletar.over{transform:translateX(-50%) scale(1.05);background:#ff0000}
-@keyframes pulseLixeira{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.03)}}
+.zona-deletar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);width:90%;max-width:500px;background:linear-gradient(135deg,#ff3b3b,#ff0000);border:2px dashed rgba(255,255,255,.5);border-radius:16px;padding:20px;text-align:center;font-weight:700;z-index:9998;display:none}
+.zona-deletar.show{display:block}
+.zona-deletar.over{transform:translateX(-50%) scale(1.05)}
 ::-webkit-scrollbar{height:8px}::-webkit-scrollbar-thumb{background:#1e2a4a;border-radius:10px}
 #loader{position:fixed;inset:0;background:#050816;display:flex;align-items:center;justify-content:center;z-index:10000;flex-direction:column;gap:10px}
 </style>
 </head>
 <body>
-
-<div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Verificando login...<small style="opacity:.5">Se travar, limpe o cache</small></div>
-
+<div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Verificando login...</div>
 <div class="top">
-<div><h1><i class="fa-solid fa-table-columns"></i> PAINEL GERENCIAL</h1><p style="opacity:.5;font-size:12px">DA Software - Base R$ 160 + PIX 10% OFF</p></div>
+<div><h1><i class="fa-solid fa-table-columns"></i> PAINEL GERENCIAL</h1><p style="opacity:.5;font-size:12px">Gerenciar Montagem/Vendas</p></div>
 <div style="display:flex;gap:8px">
 <button class="btn btn-outline" onclick="location.href='./index.html'"><i class="fa-solid fa-house"></i> Site</button>
 <button class="btn btn-outline" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
 <button class="btn btn-primary" onclick="carregar()"><i class="fa-solid fa-rotate"></i> Atualizar</button>
 </div>
 </div>
-
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px">
-<div class="card"><h3 id="totalLeads">0</h3><small style="opacity:.5">Total de Projetos</small></div>
-<div class="card"><h3 id="totalValor" style="color:#00ff88">R$ 0</h3><small style="opacity:.5">Valor Total (Potencial)</small></div>
-<div class="card" style="border-color:#00ff88"><h3 id="totalLucroReal" style="color:#00ff88">R$ 0</h3><small style="opacity:.5">LUCRO (Entregues)</small></div>
+<div class="card"><h3 id="totalLeads">0</h3><small style="opacity:.5">Total</small></div>
+<div class="card"><h3 id="totalValor" style="color:#00ff88">R$ 0</h3><small style="opacity:.5">Potencial</small></div>
+<div class="card" style="border-color:#00ff88"><h3 id="totalLucroReal" style="color:#00ff88">R$ 0</h3><small style="opacity:.5">LUCRO Entregues</small></div>
 <div class="card"><h3 id="totalAtrasados" style="color:#ff3b3b">0</h3><small style="opacity:.5">Atrasados</small></div>
 </div>
-
-<div id="iaPrecifica" class="ia-box" style="display:none">
-<h4><i class="fa-solid fa-robot"></i> IA Precificação</h4>
-<p id="iaTexto" style="font-size:12px;opacity:.8;margin-top:6px"></p>
-</div>
-
-<div id="followBanner" class="followup-banner">
-<div><i class="fa-solid fa-bell"></i> <b id="followCount">0</b> leads parados há +2h! <small id="followLista" style="display:block;opacity:.8;font-size:11px"></small></div>
-<button class="btn btn-success" onclick="enviarFollowupMassa()"><i class="fa-brands fa-whatsapp"></i> Follow-up em massa</button>
-</div>
-
-<div class="search-bar"><input id="busca" placeholder="Buscar nome, empresa, cidade..." oninput="renderKanban()"></div>
+<div id="iaPrecifica" class="ia-box" style="display:none"><h4><i class="fa-solid fa-robot"></i> IA Precificação</h4><p id="iaTexto" style="font-size:12px;opacity:.8;margin-top:6px"></p></div>
+<div id="followBanner" class="followup-banner"><div><i class="fa-solid fa-bell"></i> <b id="followCount">0</b> leads parados +2h! <small id="followLista" style="display:block;opacity:.8;font-size:11px"></small></div><button class="btn btn-success" onclick="enviarFollowupMassa()"><i class="fa-brands fa-whatsapp"></i> Follow-up</button></div>
+<div class="search-bar"><input id="busca" placeholder="Buscar..." oninput="renderKanban()"></div>
 <div class="kanban" id="kanbanBoard"></div>
-
-<div id="zonaDeletar" class="zona-deletar" ondrop="dropDeletar(event)" ondragover="event.preventDefault(); this.classList.add('over')" ondragleave="this.classList.remove('over')">
-<i class="fa-solid fa-trash"></i> ARRASTE AQUI PARA DELETAR A LEAD
-</div>
-
-<div id="modalLead" class="modal" onclick="if(event.target.id==='modalLead') fecharModal()">
-<div class="modal-content">
-<h3 id="mNome"></h3><p id="mEmpresa" style="opacity:.6;font-size:12px;margin-bottom:10px"></p>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-<div><small>WhatsApp</small><br><a id="mZap" target="_blank" style="color:#25d366;font-weight:700;text-decoration:none"></a></div>
-<div><small>Valor</small><br><b id="mValor" style="color:#00ff88"></b> <span id="mLucroBadge"></span></div>
-<div><small>Cidade</small><br><span id="mCidade"></span></div>
-<div><small>Segmento</small><br><span id="mNegocio" class="tag"></span></div>
-</div>
-<div style="margin-top:10px"><small>Escopo</small><div id="mEscopo" style="font-size:11px;background:#0a0e1f;padding:10px;border-radius:10px;margin-top:4px"></div></div>
-<div id="iaSugestao" style="margin-top:10px;background:rgba(123,97,255,.15);border:1px dashed #7b61ff;padding:10px;border-radius:10px;font-size:11px;display:none"></div>
-<hr style="margin:12px 0;border-color:rgba(255,255,255,.1)">
-<select id="mStatus" onchange="trocarStatus()">
-<option>Nova</option><option>Em Analise</option><option>Aprovada</option><option>Em Execucao</option><option>Finalizada</option><option>Entregue</option><option>Negada</option>
-</select>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-<input id="mProxContato" type="date" onchange="salvarEdicao()"><input id="mCusto" type="number" placeholder="Custo (R$)" onchange="salvarEdicao()">
-</div>
-<input id="mMotivo" placeholder="Motivo Perda" onchange="salvarEdicao()">
-<div id="listaNotas" style="margin-top:12px"></div>
-<textarea id="novaNota" rows="2" placeholder="Nova nota..."></textarea>
-<button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="addNota()">+ Adicionar Nota</button>
-<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px">
-<button class="btn btn-outline" onclick="enviarTpl('proposta')">Proposta</button>
-<button class="btn btn-outline" onclick="enviarTpl('follow')">Insistir</button>
-<button class="btn btn-outline" onclick="enviarTpl('sinal')">Sinal $</button>
-<button class="btn btn-outline" onclick="enviarTpl('entrega')">Entregue</button>
-</div>
-<div style="display:flex;gap:8px;margin-top:16px">
-<button class="btn btn-outline" style="flex:1" onclick="fecharModal()">Fechar</button>
-<button class="btn btn-danger" style="flex:1" onclick="deletarAtual()">Deletar</button>
-</div>
-</div>
-</div>
-
-<div id="modalPerda" class="modal">
-<div class="modal-content" style="text-align:center;border-color:#ff3b3b">
-<h3 style="color:#ff3b3b"><i class="fa-solid fa-triangle-exclamation"></i> Por que perdeu?</h3>
-<p style="font-size:12px;opacity:.7;margin:8px 0">Obrigatório para Negada.</p>
-<select id="motivoSelect" style="margin-top:10px">
-<option value="">Selecione...</option>
-<option>Valor alto</option>
-<option>Demorou responder</option>
-<option>Concorrente mais barato</option>
-<option>Sem dinheiro</option>
-<option>Só curioso</option>
-<option>Outro</option>
-</select>
-<input id="motivoObs" placeholder="Detalhe extra">
-<button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="confirmarPerda()">Confirmar</button>
-<button class="btn btn-outline" style="width:100%;margin-top:6px" onclick="cancelarPerda()">Cancelar</button>
-</div>
-</div>
+<div id="zonaDeletar" class="zona-deletar" ondrop="dropDeletar(event)" ondragover="event.preventDefault(); this.classList.add('over')" ondragleave="this.classList.remove('over')"><i class="fa-solid fa-trash"></i> ARRASTE PARA DELETAR</div>
+<div id="modalLead" class="modal" onclick="if(event.target.id==='modalLead') fecharModal()"><div class="modal-content"><h3 id="mNome"></h3><p id="mEmpresa" style="opacity:.6;font-size:12px;margin-bottom:10px"></p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><small>WhatsApp</small><br><a id="mZap" target="_blank" style="color:#25d366;font-weight:700;text-decoration:none"></a></div><div><small>Valor</small><br><b id="mValor" style="color:#00ff88"></b> <span id="mLucroBadge"></span></div><div><small>Cidade</small><br><span id="mCidade"></span></div><div><small>Segmento</small><br><span id="mNegocio" class="tag"></span></div></div><div style="margin-top:10px"><small>Escopo</small><div id="mEscopo" style="font-size:11px;background:#0a0e1f;padding:10px;border-radius:10px;margin-top:4px"></div></div><div id="iaSugestao" style="margin-top:10px;background:rgba(123,97,255,.15);border:1px dashed #7b61ff;padding:10px;border-radius:10px;font-size:11px;display:none"></div><hr style="margin:12px 0;border-color:rgba(255,255,255,.1)"><select id="mStatus" onchange="trocarStatus()"><option>Nova</option><option>Em Analise</option><option>Aprovada</option><option>Em Execucao</option><option>Finalizada</option><option>Entregue</option><option>Negada</option></select><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="mProxContato" type="date" onchange="salvarEdicao()"><input id="mCusto" type="number" placeholder="Custo R$" onchange="salvarEdicao()"></div><input id="mMotivo" placeholder="Motivo Perda" onchange="salvarEdicao()"><div id="listaNotas" style="margin-top:12px"></div><textarea id="novaNota" rows="2" placeholder="Nova nota..."></textarea><button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="addNota()">+ Nota</button><div style="display:flex;gap:6px;margin-top:12px"><button class="btn btn-outline" onclick="enviarTpl('proposta')">Proposta</button><button class="btn btn-outline" onclick="enviarTpl('follow')">Insistir</button><button class="btn btn-outline" onclick="enviarTpl('sinal')">Sinal $</button><button class="btn btn-outline" onclick="enviarTpl('entrega')">Entregue</button></div><div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn-outline" style="flex:1" onclick="fecharModal()">Fechar</button><button class="btn btn-danger" style="flex:1" onclick="deletarAtual()">Deletar</button></div></div></div>
+<div id="modalPerda" class="modal"><div class="modal-content" style="text-align:center;border-color:#ff3b3b"><h3 style="color:#ff3b3b">Por que perdeu?</h3><select id="motivoSelect" style="margin-top:10px"><option value="">Selecione...</option><option>Valor alto</option><option>Demorou responder</option><option>Concorrente mais barato</option><option>Sem dinheiro</option><option>Só curioso</option><option>Outro</option></select><input id="motivoObs" placeholder="Detalhe"><button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="confirmarPerda()">Confirmar</button><button class="btn btn-outline" style="width:100%;margin-top:6px" onclick="cancelarPerda()">Cancelar</button></div></div>
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-
 const SUPABASE_URL = "https://ecrpiuhsbhuqcxbbpqfh.supabase.co";
 const SUPABASE_KEY = "sb_publishable_I7Hw7KieW3VNFqb9LYrFoQ_tFWWABwl";
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+});
+
+// Verifica login UMA VEZ SÓ
 const { data: { session } } = await supabase.auth.getSession();
 if(!session){ window.location.href='./login.html'; }
 document.getElementById('loader').style.display='none';
 window.supabase = supabase;
-
 window.logout = async () => { await supabase.auth.signOut(); location.href='./login.html'; }
 
-let leads=[], leadAtual=null, dragIdx=null, leadPerdaTemp=null, statusAnterior=null;
+// Desloga quando fechar/recarregar
+window.addEventListener('pagehide', () => { supabase.auth.signOut(); });
 
-function parseValorBR(v){
-  if(!v) return 0;
-  let s=v.toString().replace(/R\$/gi,"").trim();
-  if(s.includes(",")&&s.includes(".")){ s=s.replace(/\./g,"").replace(",","."); }
-  else if(s.includes(",")){ s=s.replace(",","."); }
-  let n=parseFloat(s); if(isNaN(n)){ n=parseFloat(v.toString().replace(/[^\d]/g,""))/100; }
-  return n||0;
-}
-
+let leads=[], leadAtual=null, dragIdx=null, leadPerdaTemp=null;
+function parseValorBR(v){ if(!v) return 0; let s=v.toString().replace(/R\$/gi,"").trim(); if(s.includes(",")&&s.includes(".")){ s=s.replace(/\./g,"").replace(",","."); } else if(s.includes(",")){ s=s.replace(",","."); } let n=parseFloat(s); if(isNaN(n)){ n=parseFloat(v.toString().replace(/[^\d]/g,""))/100; } return n||0; }
 async function atualizarBanco(l){
-  console.log("Salvando lead", l.id, "status:", l.status);
-  const payload = {
-    status: l.status,
-    custo: l.custo || 0,
-    prox_contato: l.proxContato || null,
-    motivo_perda: l.motivoPerda || null,
-    notas: l.notas || []
-  };
-  const { error } = await supabase.from('leads').update(payload).eq('id', l.id);
-  if(error){
-    alert("ERRO AO SALVAR: " + error.message + "\n\nVá no Supabase > Table Editor > leads e veja se as colunas status, custo, prox_contato, motivo_perda, notas existem. Se não, rode o SQL que te mandei.");
-    console.error(error);
-  } else {
-    console.log("Salvo OK!");
-  }
+  const { error } = await supabase.from('leads').update({ status:l.status, custo:l.custo||0, prox_contato:l.proxContato||null, motivo_perda:l.motivoPerda||null, notas:l.notas||[] }).eq('id', l.id);
+  if(error){ alert("Erro salvar: "+error.message); console.error(error); }
 }
-
 window.carregar = async () => {
   const { data, error } = await supabase.from('leads').select('*').order('id', {ascending:false});
-  if(error){ alert("Erro carregar: "+error.message); return; }
+  if(error){ alert(error.message); return; }
   leads = data.map(l=>({...l, notas:l.notas||[], custo:l.custo||0, proxContato:l.proxContato||l.prox_contato||"", status:l.status||"Nova", motivoPerda:l.motivoPerda||l.motivo_perda||""}));
   renderKanban(); verificarFollowup(); calcularIAPrecificacao();
 }
-
 window.renderKanban = () => {
   const busca=(document.getElementById("busca").value||"").toLowerCase();
-  let filtrados=leads.filter(l=>( (l.nome||'') + (l.empresa||'') + (l.cidade||'') + (l.negocio||'') ).toLowerCase().includes(busca));
+  let filtrados=leads.filter(l=>((l.nome||'')+(l.empresa||'')+(l.cidade||'')+(l.negocio||'')).toLowerCase().includes(busca));
   document.getElementById("totalLeads").innerText=filtrados.length;
-  let somaTotal=filtrados.reduce((a,l)=>a+parseValorBR(l.valor),0);
-  document.getElementById("totalValor").innerText=somaTotal.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-  let lucroReal=filtrados.filter(l=>l.status==="Entregue").reduce((a,l)=>a+(parseValorBR(l.valor)-(Number(l.custo)||0)),0);
-  document.getElementById("totalLucroReal").innerText=lucroReal.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  document.getElementById("totalValor").innerText=filtrados.reduce((a,l)=>a+parseValorBR(l.valor),0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  document.getElementById("totalLucroReal").innerText=filtrados.filter(l=>l.status==="Entregue").reduce((a,l)=>a+(parseValorBR(l.valor)-(Number(l.custo)||0)),0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
   const hoje=new Date().toISOString().slice(0,10);
   document.getElementById("totalAtrasados").innerText=filtrados.filter(l=>l.proxContato && l.proxContato<=hoje &&!["Entregue","Finalizada","Negada"].includes(l.status)).length;
   const colunas=["Nova","Em Analise","Aprovada","Em Execucao","Finalizada","Entregue","Negada"];
-  let html="";
-  colunas.forEach(col=>{
-    let itens=filtrados.filter(l=>l.status===col);
-    let somaCol=itens.reduce((a,l)=>a+parseValorBR(l.valor),0);
-    let lucroCol=col==="Entregue"?itens.reduce((a,l)=>a+(parseValorBR(l.valor)-(Number(l.custo)||0)),0):0;
-    html+=`<div class="kanban-col" data-status="${col}" ondrop="drop(event)" ondragover="event.preventDefault()"><h4>${col} <span style="background:rgba(255,255,255,.1);padding:2px 8px;border-radius:10px">${itens.length}</span></h4><div class="col-valor"><span>${itens.length} leads</span><b>${somaCol.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</b></div>${col==="Entregue"?`<div class="col-valor" style="border-color:#00ff88;color:#00ff88"><span>Lucro Real</span><b>${lucroCol.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</b></div>`:``}`;
-    itens.forEach(l=>{
-      const idx=leads.findIndex(x=>x.id===l.id);
-      const atr=l.proxContato && l.proxContato<=hoje &&!["Entregue","Finalizada","Negada"].includes(l.status);
-      const lucro=parseValorBR(l.valor)-(Number(l.custo)||0);
-      html+=`<div class="kanban-card ${atr?'atrasado':''}" draggable="true" ondragstart="drag(event,${idx})" ondragend="dragEnd()" onclick="abrir(${idx})"><b>${l.nome||''}</b> ${l.status==="Entregue"?`<span class="lucro-real">Lucro R$ ${lucro.toFixed(0)}</span>`:''}<br><small style="opacity:.6">${l.empresa||''} - ${l.cidade||''}</small><br><span class="valor">${l.valor||''}</span> <span class="tag">${l.negocio||''}</span>${l.proxContato?`<br><small style="font-size:9px;opacity:.5"><i class="fa-solid fa-clock"></i> ${l.proxContato}</small>`:''}</div>`;
-    });
-    html+=`</div>`;
-  });
-  document.getElementById("kanbanBoard").innerHTML=html;
+  let html=""; colunas.forEach(col=>{ let itens=filtrados.filter(l=>l.status===col); let soma=itens.reduce((a,l)=>a+parseValorBR(l.valor),0); html+=`<div class="kanban-col" data-status="${col}" ondrop="drop(event)" ondragover="event.preventDefault()"><h4>${col} <span style="background:rgba(255,255,255,.1);padding:2px 8px;border-radius:10px">${itens.length}</span></h4><div class="col-valor"><b>${soma.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</b></div>`; itens.forEach(l=>{ const idx=leads.findIndex(x=>x.id===l.id); const atr=l.proxContato && l.proxContato<=hoje &&!["Entregue","Finalizada","Negada"].includes(l.status); html+=`<div class="kanban-card ${atr?'atrasado':''}" draggable="true" ondragstart="drag(event,${idx})" ondragend="dragEnd()" onclick="abrir(${idx})"><b>${l.nome||''}</b><br><small style="opacity:.6">${l.empresa||''}</small><br><span class="valor">${l.valor||''}</span> <span class="tag">${l.negocio||''}</span></div>`; }); html+=`</div>`; }); document.getElementById("kanbanBoard").innerHTML=html;
 }
-
-window.drag = (e,idx)=>{ dragIdx=idx; e.target.classList.add("dragging"); document.getElementById("zonaDeletar").classList.add("show"); }
-window.dragEnd = ()=>{ document.getElementById("zonaDeletar").classList.remove("show"); document.getElementById("zonaDeletar").classList.remove("over"); document.querySelectorAll(".kanban-card").forEach(c=>c.classList.remove("dragging")); }
-window.drop = async (e)=>{
-  e.preventDefault(); const novoStatus=e.currentTarget.dataset.status; if(dragIdx===null) return;
-  if(novoStatus==="Negada"){ leadPerdaTemp=dragIdx; statusAnterior=leads[dragIdx].status; document.getElementById("modalPerda").classList.add("show"); return; }
-  leads[dragIdx].status=novoStatus; renderKanban(); await atualizarBanco(leads[dragIdx]); dragEnd(); dragIdx=null;
-}
-window.confirmarPerda = async ()=>{
-  const motivo=document.getElementById("motivoSelect").value; if(!motivo){ alert("Selecione o motivo!"); return; }
-  const obs=document.getElementById("motivoObs").value; leads[leadPerdaTemp].status="Negada"; leads[leadPerdaTemp].motivoPerda=motivo+(obs?" - "+obs:"");
-  document.getElementById("modalPerda").classList.remove("show"); renderKanban(); await atualizarBanco(leads[leadPerdaTemp]); dragEnd(); dragIdx=null; leadPerdaTemp=null;
-}
-window.cancelarPerda = ()=>{ document.getElementById("modalPerda").classList.remove("show"); dragEnd(); dragIdx=null; leadPerdaTemp=null; }
-window.dropDeletar = async (e)=>{
-  e.preventDefault(); if(dragIdx===null) return;
-  if(!confirm(`Deletar ${leads[dragIdx].nome}?`)){ dragEnd(); dragIdx=null; return; }
-  const id=leads[dragIdx].id; leads.splice(dragIdx,1); renderKanban(); dragEnd(); dragIdx=null;
-  if(id){ const {error}=await supabase.from('leads').delete().eq('id', id); if(error) alert("Erro deletar: "+error.message); }
-}
-window.abrir = (idx)=>{
-  leadAtual=idx; const l=leads[idx];
-  document.getElementById("mNome").innerText=l.nome||''; document.getElementById("mEmpresa").innerText=`${l.empresa||''} | ${l.email||''}`;
-  document.getElementById("mZap").innerText=l.whatsapp||''; document.getElementById("mZap").href=`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}`;
-  document.getElementById("mValor").innerText=l.valor||''; document.getElementById("mCidade").innerText=l.cidade||''; document.getElementById("mNegocio").innerText=l.negocio||'';
-  document.getElementById("mEscopo").innerText=l.escopo||l.descricao||''; document.getElementById("mStatus").value=l.status||'Nova';
-  document.getElementById("mProxContato").value=l.proxContato||''; document.getElementById("mCusto").value=l.custo||''; document.getElementById("mMotivo").value=l.motivoPerda||'';
-  const lucro=parseValorBR(l.valor)-(Number(l.custo)||0);
-  document.getElementById("mLucroBadge").innerHTML=l.status==="Entregue"?`<span class="lucro-real">Lucro Real: R$ ${lucro.toLocaleString("pt-BR")}</span>`:"";
-  let qtd=leads.filter(x=>x.negocio===l.negocio&&x.status==="Entregue").length;
-  if(qtd>0){
-    let media=leads.filter(x=>x.negocio===l.negocio&&x.status==="Entregue").reduce((a,x)=>a+parseValorBR(x.valor),0)/qtd;
-    document.getElementById("iaSugestao").style.display="block";
-    document.getElementById("iaSugestao").innerHTML=`<i class="fa-solid fa-robot"></i> IA: Média de ${l.negocio} entregue é <b>${media.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</b>.`;
-  } else { document.getElementById("iaSugestao").style.display="none"; }
-  document.getElementById("listaNotas").innerHTML=(l.notas||[]).map(n=>`<div class="note-item"><small>${n.data}</small><br>${n.texto}</div>`).join("")||"<p style='opacity:.4;font-size:11px'>Sem notas</p>";
-  document.getElementById("modalLead").classList.add("show");
-}
-window.fecharModal = ()=>{ document.getElementById("modalLead").classList.remove("show"); leadAtual=null; }
-window.trocarStatus = async ()=>{
-  const novo=document.getElementById("mStatus").value;
-  if(novo==="Negada"&&leads[leadAtual].status!=="Negada"){
-    const motivo=prompt("Motivo da perda OBRIGATORIO:"); if(!motivo){ document.getElementById("mStatus").value=leads[leadAtual].status; return; }
-    leads[leadAtual].motivoPerda=motivo; document.getElementById("mMotivo").value=motivo;
-  }
-  await salvarEdicao();
-}
-window.salvarEdicao = async ()=>{ if(leadAtual===null) return; leads[leadAtual].status=document.getElementById("mStatus").value; leads[leadAtual].proxContato=document.getElementById("mProxContato").value; leads[leadAtual].custo=Number(document.getElementById("mCusto").value)||0; leads[leadAtual].motivoPerda=document.getElementById("mMotivo").value; renderKanban(); await atualizarBanco(leads[leadAtual]); }
-window.addNota = async ()=>{ const txt=document.getElementById("novaNota").value.trim(); if(!txt||leadAtual===null) return; leads[leadAtual].notas=leads[leadAtual].notas||[]; leads[leadAtual].notas.push({data:new Date().toLocaleString("pt-BR"), texto:txt}); document.getElementById("novaNota").value=""; abrir(leadAtual); await atualizarBanco(leads[leadAtual]); }
-window.deletarAtual = async ()=>{ if(leadAtual===null||!confirm("Deletar?")) return; const id=leads[leadAtual].id; leads.splice(leadAtual,1); fecharModal(); renderKanban(); const {error}=await supabase.from('leads').delete().eq('id', id); if(error) alert("Erro deletar: "+error.message); }
-window.enviarTpl = (tipo)=>{ if(leadAtual===null) return; const l=leads[leadAtual]; let msg=""; if(tipo==="proposta") msg=`Ola ${l.nome}! Sua proposta de ${l.valor} para ${l.negocio} esta pronta. Posso enviar o PDF?`; if(tipo==="follow") msg=`Ola ${l.nome}! Viu que simulou ${l.negocio} por ${l.valor} mas nao fechamos. Ficou com duvida no valor?`; if(tipo==="sinal") msg=`${l.nome}, pra comecar seu sistema ${l.negocio} preciso de 50% de sinal de ${l.valor}. PIX: SEU_PIX`; if(tipo==="entrega") msg=`${l.nome}, seu sistema ${l.negocio} foi entregue!`; window.open(`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,"_blank"); }
-window.verificarFollowup = ()=>{
-  const agora=new Date(); let parados=leads.filter(l=>{
-    if(["Entregue","Finalizada","Negada"].includes(l.status)) return false;
-    try{ const dataLead=new Date(l.created_at||Date.now()); const diffH=(agora-dataLead)/1000/60/60; return diffH>=2; }catch{ return l.status==="Nova"; }
-  });
-  if(parados.length>0){ document.getElementById("followBanner").classList.add("show"); document.getElementById("followCount").innerText=parados.length; document.getElementById("followLista").innerText=parados.slice(0,3).map(p=>p.nome).join(", ")+(parados.length>3?" e mais...":""); } else { document.getElementById("followBanner").classList.remove("show"); }
-}
-window.enviarFollowupMassa = ()=>{
-  let parados=leads.filter(l=>!["Entregue","Finalizada","Negada"].includes(l.status));
-  parados.slice(0,5).forEach(l=>{ let msg=`Ola ${l.nome}! Vi que simulou ${l.negocio} por ${l.valor} e ficou com duvida. Posso tirar 10% no PIX hoje se fechar agora. Bora?`; window.open(`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,"_blank"); });
-}
-window.calcularIAPrecificacao = ()=>{
-  const box=document.getElementById("iaPrecifica"); const txt=document.getElementById("iaTexto");
-  if(leads.length<5){ box.style.display="none"; return; }
-  let porSeg={}; leads.forEach(l=>{ if(!porSeg[l.negocio]) porSeg[l.negocio]=[]; porSeg[l.negocio].push(parseValorBR(l.valor)); });
-  let maisLucrativo=""; let maiorMedia=0;
-  for(let seg in porSeg){ let media=porSeg[seg].reduce((a,b)=>a+b,0)/porSeg[seg].length; if(media>maiorMedia){ maiorMedia=media; maisLucrativo=seg; } }
-  box.style.display="block"; txt.innerHTML=`Segmento mais lucrativo: <b>${maisLucrativo}</b> (média ${maiorMedia.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}). Dica: Foque anúncios em ${maisLucrativo}.`;
-}
-
+window.drag=(e,idx)=>{dragIdx=idx; e.target.classList.add("dragging"); document.getElementById("zonaDeletar").classList.add("show");}
+window.dragEnd=()=>{document.getElementById("zonaDeletar").classList.remove("show"); document.getElementById("zonaDeletar").classList.remove("over"); document.querySelectorAll(".kanban-card").forEach(c=>c.classList.remove("dragging"));}
+window.drop=async(e)=>{e.preventDefault(); const novo=e.currentTarget.dataset.status; if(dragIdx===null) return; if(novo==="Negada"){leadPerdaTemp=dragIdx; document.getElementById("modalPerda").classList.add("show"); return;} leads[dragIdx].status=novo; renderKanban(); await atualizarBanco(leads[dragIdx]); dragEnd(); dragIdx=null;}
+window.confirmarPerda=async()=>{const motivo=document.getElementById("motivoSelect").value; if(!motivo){alert("Selecione"); return;} const obs=document.getElementById("motivoObs").value; leads[leadPerdaTemp].status="Negada"; leads[leadPerdaTemp].motivoPerda=motivo+(obs?" - "+obs:""); document.getElementById("modalPerda").classList.remove("show"); renderKanban(); await atualizarBanco(leads[leadPerdaTemp]); dragEnd(); dragIdx=null; leadPerdaTemp=null;}
+window.cancelarPerda=()=>{document.getElementById("modalPerda").classList.remove("show"); dragEnd(); dragIdx=null; leadPerdaTemp=null;}
+window.dropDeletar=async(e)=>{e.preventDefault(); if(dragIdx===null) return; if(!confirm(`Deletar ${leads[dragIdx].nome}?`)){dragEnd(); dragIdx=null; return;} const id=leads[dragIdx].id; leads.splice(dragIdx,1); renderKanban(); dragEnd(); dragIdx=null; if(id){ await supabase.from('leads').delete().eq('id', id);} }
+window.abrir=(idx)=>{leadAtual=idx; const l=leads[idx]; document.getElementById("mNome").innerText=l.nome||''; document.getElementById("mEmpresa").innerText=`${l.empresa||''} | ${l.email||''}`; document.getElementById("mZap").innerText=l.whatsapp||''; document.getElementById("mZap").href=`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}`; document.getElementById("mValor").innerText=l.valor||''; document.getElementById("mCidade").innerText=l.cidade||''; document.getElementById("mNegocio").innerText=l.negocio||''; document.getElementById("mEscopo").innerText=l.escopo||l.descricao||''; document.getElementById("mStatus").value=l.status||'Nova'; document.getElementById("mProxContato").value=l.proxContato||''; document.getElementById("mCusto").value=l.custo||''; document.getElementById("mMotivo").value=l.motivoPerda||''; document.getElementById("listaNotas").innerHTML=(l.notas||[]).map(n=>`<div class="note-item"><small>${n.data}</small><br>${n.texto}</div>`).join("")||"<p style='opacity:.4;font-size:11px'>Sem notas</p>"; document.getElementById("modalLead").classList.add("show");}
+window.fecharModal=()=>{document.getElementById("modalLead").classList.remove("show"); leadAtual=null;}
+window.trocarStatus=async()=>{const novo=document.getElementById("mStatus").value; if(novo==="Negada"&&leads[leadAtual].status!=="Negada"){const motivo=prompt("Motivo OBRIGATORIO:"); if(!motivo){document.getElementById("mStatus").value=leads[leadAtual].status; return;} leads[leadAtual].motivoPerda=motivo; document.getElementById("mMotivo").value=motivo;} await salvarEdicao();}
+window.salvarEdicao=async()=>{if(leadAtual===null) return; leads[leadAtual].status=document.getElementById("mStatus").value; leads[leadAtual].proxContato=document.getElementById("mProxContato").value; leads[leadAtual].custo=Number(document.getElementById("mCusto").value)||0; leads[leadAtual].motivoPerda=document.getElementById("mMotivo").value; renderKanban(); await atualizarBanco(leads[leadAtual]);}
+window.addNota=async()=>{const txt=document.getElementById("novaNota").value.trim(); if(!txt||leadAtual===null) return; leads[leadAtual].notas=leads[leadAtual].notas||[]; leads[leadAtual].notas.push({data:new Date().toLocaleString("pt-BR"), texto:txt}); document.getElementById("novaNota").value=""; abrir(leadAtual); await atualizarBanco(leads[leadAtual]);}
+window.deletarAtual=async()=>{if(leadAtual===null||!confirm("Deletar?")) return; const id=leads[leadAtual].id; leads.splice(leadAtual,1); fecharModal(); renderKanban(); await supabase.from('leads').delete().eq('id', id);}
+window.enviarTpl=(tipo)=>{if(leadAtual===null) return; const l=leads[leadAtual]; let msg=""; if(tipo==="proposta") msg=`Ola ${l.nome}! Sua proposta ${l.valor} ${l.negocio} pronta. Em ate 12x ou PIX 10% OFF.`; if(tipo==="follow") msg=`Ola ${l.nome}! Viu que simulou ${l.negocio} por ${l.valor}?`; if(tipo==="sinal") msg=`${l.nome}, sinal 50% de ${l.valor} pra comecar ${l.negocio}. PIX:`; if(tipo==="entrega") msg=`${l.nome}, seu sistema ${l.negocio} entregue!`; window.open(`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,"_blank");}
+window.verificarFollowup=()=>{let parados=leads.filter(l=>!["Entregue","Finalizada","Negada"].includes(l.status)); if(parados.length>0){document.getElementById("followBanner").classList.add("show"); document.getElementById("followCount").innerText=parados.length;} else {document.getElementById("followBanner").classList.remove("show");}}
+window.enviarFollowupMassa=()=>{let parados=leads.filter(l=>!["Entregue","Finalizada","Negada"].includes(l.status)); parados.slice(0,5).forEach(l=>{let msg=`Ola ${l.nome}! 10% OFF no PIX hoje se fechar ${l.negocio}`; window.open(`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,"_blank");});}
+window.calcularIAPrecificacao=()=>{const box=document.getElementById("iaPrecifica"); const txt=document.getElementById("iaTexto"); if(leads.length<5){box.style.display="none"; return;} let porSeg={}; leads.forEach(l=>{if(!porSeg[l.negocio]) porSeg[l.negocio]=[]; porSeg[l.negocio].push(parseValorBR(l.valor));}); let mais=""; let maior=0; for(let s in porSeg){let m=porSeg[s].reduce((a,b)=>a+b,0)/porSeg[s].length; if(m>maior){maior=m; mais=s;}} box.style.display="block"; txt.innerHTML=`Mais lucrativo: <b>${mais}</b> média ${maior.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}`;}
 carregar();
-setInterval(()=>{ if(window.verificarFollowup) verificarFollowup(); }, 60000);
 </script>
 </body>
 </html>
