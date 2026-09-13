@@ -1,19 +1,48 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login - DA Software</title>
-<style>body{background:#050816;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:Poppins,sans-serif} .box{background:#10162A;padding:30px;border-radius:16px;width:90%;max-width:360px;border:1px solid rgba(255,255,255,.1)} input{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #333;background:#0a0e1f;color:#fff} button{width:100%;padding:12px;background:linear-gradient(135deg,#00e5ff,#7b61ff);border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer}</style>
-</head><body>
-<div class="box"><h3>DA Software</h3><p style="opacity:.5;font-size:12px;margin-bottom:10px">Painel Restrito</p>
-<input id="email" placeholder="Seu E-mail">
-<input id="senha" type="password" placeholder="Sua Senha">
-<button id="btnLogin">Entrar</button><p id="msg" style="font-size:12px;margin-top:10px;color:#ff3b3b"></p>
+<link rel="icon" href="./assets/logo.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif}
+body{background:#050816;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh}
+.box{background:#10162A;border:1px solid rgba(255,255,255,.1);padding:30px;border-radius:20px;width:100%;max-width:380px}
+input{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:#0a0e1f;color:#fff;margin:8px 0;outline:none}
+button{width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#00e5ff,#7b61ff);color:#fff;font-weight:700;cursor:pointer;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>DA Software - Login</h2>
+<p style="opacity:.5;font-size:12px;margin-bottom:12px">Acesso restrito</p>
+<input id="email" type="email" placeholder="Seu e-mail">
+<input id="senha" type="password" placeholder="Sua senha">
+<button onclick="logar()">Entrar</button>
+<p id="msg" style="font-size:12px;margin-top:10px;color:#ff3b3b"></p>
 </div>
+
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-const supabase = createClient("https://ecrpiuhsbhuqcxbbpqfh.supabase.co", "sb_publishable_I7Hw7KieW3VNFqb9LYrFoQ_tFWWABwl")
-document.getElementById('btnLogin').onclick = async () => {
-  const { error } = await supabase.auth.signInWithPassword({ email: document.getElementById('email').value, password: document.getElementById('senha').value })
-  if(error) document.getElementById('msg').innerText = error.message
-  else location.href='./painel-gerencial.html'
+const SUPABASE_URL = "https://ecrpiuhsbhuqcxbbpqfh.supabase.co";
+const SUPABASE_KEY = "sb_publishable_I7Hw7KieW3VNFqb9LYrFoQ_tFWWABwl";
+
+// USA sessionStorage - some quando fecha a aba
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    storage: window.sessionStorage,
+    persistSession: true,
+    autoRefreshToken: true
+  }
+});
+
+window.logar = async () => {
+  const email = document.getElementById('email').value;
+  const senha = document.getElementById('senha').value;
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+  if(error){ document.getElementById('msg').innerText = error.message; return; }
+  location.href = './painel-gerencial.html';
 }
-</script></body></html>
+</script>
+</body>
+</html>
