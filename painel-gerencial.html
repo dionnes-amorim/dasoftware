@@ -52,7 +52,7 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 <div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Verificando login...</div>
 
 <div class="top">
-<div><h1 style="font-size:18px"><i class="fa-solid fa-table-columns" style="color:#00e5ff"></i> PAINEL GERENCIAL</h1><p style="opacity:.5;font-size:11px">Potencial = Interesse + Execução • Canceladas fora do potencial</p></div>
+<div><h1 style="font-size:18px"><i class="fa-solid fa-table-columns" style="color:#00e5ff"></i> PAINEL GERENCIAL</h1><p style="opacity:.5;font-size:11px">Potencial = Interesse + Execução • Canceladas fora</p></div>
 <div style="display:flex;gap:6px;flex-wrap:wrap">
 <button class="btn btn-outline" onclick="exportarCSV()"><i class="fa-solid fa-file-csv"></i> CSV</button>
 <button class="btn btn-outline" onclick="location.href='./index.html'"><i class="fa-solid fa-house"></i></button>
@@ -118,51 +118,64 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL="https://ecrpiuhsbhuqcxbbpqfh.supabase.co";
 const SUPABASE_KEY="sb_publishable_I7Hw7KieW3VNFqb9LYrFoQ_tFWWABwl";
 
-// CORRIGIDO: usa localStorage e nao trava no Verificando
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: {
-    storage: window.localStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: false
-  }
+  auth: { storage: window.localStorage, persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
 });
 
-async function checkAuth(){
-  try{
-    const { data: { session } } = await supabase.auth.getSession();
-    if(!session){
-      console.log("Sem sessão, indo pro login");
-      location.href='./login.html';
-      return false;
-    }
-    return true;
-  }catch(e){
-    console.error("Erro auth", e);
-    document.getElementById('loader').innerHTML = '<p>Erro ao verificar login. <a href="./login.html" style="color:#00e5ff">Ir pro login</a></p>';
-    return false;
+let sessionOk = false;
+try {
+  const { data } = await supabase.auth.getSession();
+  if(!data.session){
+    location.href='./login.html';
+  } else {
+    sessionOk = true;
+    document.getElementById('loader').style.display='none';
   }
-}
-
-const ok = await checkAuth();
-if(ok){
-  document.getElementById('loader').style.display='none';
+} catch(e){
+  console.error(e);
+  document.getElementById('loader').innerHTML = '<p style="color:#fff">Erro auth. <a href="./login.html" style="color:#00e5ff">Voltar pro login</a></p>';
 }
 
 window.supabase=supabase;
 window.logout=async()=>{ await supabase.auth.signOut(); localStorage.clear(); sessionStorage.clear(); location.href='./login.html'; };
 
 let leads=[], idxAtual=null, dragIdx=null, pendenteCancel=null, chartM=null, chartF=null, chartV=null;
-function parseValor(v){ if(!v) return 0; let s=v.toString().replace(/R\$/gi,"").trim(); if(s.includes(",")&&s.includes(".")) s=s.replace(/\./g,"").replace(",","."); else if(s.includes(",")) s=s.replace(",","."); let n=parseFloat(s); if(isNaN(n)) n=parseFloat(v.toString().replace(/[^\d]/g,""))/100; return n||0; }
-function diasDesde(dStr){ if(!dStr) return 0; try{ const p=dStr.split(',')[0].split('/'); if(p.length!==3) return 0; const d=new Date(p[2],p[1]-1,p[0]); return Math.floor((new Date()-d)/(1000*60*60*24)); }catch(e){return 0} }
-async function atualizarBanco(l){ const {error}=await supabase.from('leads').update({status:l.status,custo:l.custo||0,prox_contato:l.prox_contato||null,motivo_perda:l.motivo_perda||null,notas:l.notas||[]}).eq('id',l.id); if(error) alert(error.message); }
+
+function parseValor(v){
+  if(!v) return 0;
+  let s=v.toString().replace(/R\$/gi,"").trim();
+  if(s.includes(",")&&s.includes(".")) s=s.replace(/\./g,"").replace(",",".");
+  else if(s.includes(",")) s=s.replace(",",".");
+  let n=parseFloat(s);
+  if(isNaN(n)) n=parseFloat(v.toString().replace(/[^\d]/g,""))/100;
+  return n||0;
+}
+function diasDesde(dStr){
+  if(!dStr) return 0;
+  try{
+    const p=dStr.split(',')[0].split('/');
+    if(p.length!==3) return 0;
+    const d=new Date(p[2],p[1]-1,p[0]);
+    return Math.floor((new Date()-d)/(1000*60*60*24));
+  }catch(e){return 0}
+}
+async function atualizarBanco(l){
+  const {error}=await supabase.from('leads').update({status:l.status,custo:l.custo||0,prox_contato:l.prox_contato||null,motivo_perda:l.motivo_perda||null,notas:l.notas||[]}).eq('id',l.id);
+  if(error) alert(error.message);
+}
 
 window.carregar=async()=>{
+  document.getElementById('loader').style.display='flex';
   const {data,error}=await supabase.from('leads').select('*').order('id',{ascending:false});
-  if(error){ alert(error.message); document.getElementById('loader').style.display='none'; return; }
-  leads=data.map(l=>{ let s=l.status||'Interesse'; if(['Nova','Em Analise','Aprovada','Finalizada'].includes(s)) s='Interesse'; if(s==='Negada') s='Canceladas'; return {...l, status:s, notas:l.notas||[], custo:l.custo||0, motivoPerda:l.motivo_perda||''}; });
-  render();
   document.getElementById('loader').style.display='none';
+  if(error){ alert(error.message); return; }
+  leads=data.map(l=>{
+    let s=l.status||'Interesse';
+    if(['Nova','Em Analise','Aprovada','Finalizada'].includes(s)) s='Interesse';
+    if(s==='Negada') s='Canceladas';
+    return {...l, status:s, notas:l.notas||[], custo:l.custo||0, motivoPerda:l.motivo_perda||''};
+  });
+  render();
 }
 
 window.render=()=>{
@@ -209,16 +222,32 @@ window.render=()=>{
 
   const porCol = colunas.map(c=> f.filter(l=>l.status===c).length);
   const valorPorCol = colunas.map(c=> f.filter(l=>l.status===c).reduce((a,l)=>a+parseValor(l.valor),0));
-  const motivosCount={}; canceladas.forEach(l=>{ const m=(l.motivo_perda||'Sem motivo').split(' - ')[0]; motivosCount[m]=(motivosCount[m]||0)+1; });
+  const motivosCount={};
+  canceladas.forEach(l=>{ const m=(l.motivo_perda||'Sem motivo').split(' - ')[0]; motivosCount[m]=(motivosCount[m]||0)+1; });
 
+  const ctxF = document.getElementById('chartFunil');
   if(chartF) chartF.destroy();
-  chartF=new Chart(document.getElementById('chartFunil'),{type:'bar',data:{labels:['Interesse',[STRIPPED]
+  chartF = new Chart(ctxF, {
+    type: 'bar',
+    data: { labels: ['Interesse','Execução','Entregue','Canceladas'], datasets: [{ label: 'Qtd', data: porCol, backgroundColor: ['#f59e0b','#7c3aed','#10b981','#ef4444'] }] },
+    options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{color:'#fff'}},x:{ticks:{color:'#fff'}}} }
+  });
 
+  const ctxV = document.getElementById('chartValor');
   if(chartV) chartV.destroy();
-  chartV=new Chart(document.getElementById('chartValor'),{type:'bar',data:{labels:['Interesse',[STRIPPED] '+v}}}}});
+  chartV = new Chart(ctxV, {
+    type: 'bar',
+    data: { labels: ['Interesse','Execução','Entregue','Canceladas'], datasets: [{ label: 'R$', data: valorPorCol, backgroundColor: ['#f59e0b','#7c3aed','#10b981','#ef4444'] }] },
+    options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{color:'#fff'}},x:{ticks:{color:'#fff'}}} }
+  });
 
+  const ctxM = document.getElementById('chartMotivos');
   if(chartM) chartM.destroy();
-  chartM=new Chart(document.getElementById('chartMotivos'),{type:'doughnut',data:{labels:Object.keys(motivosCount),[STRIPPED]
+  chartM = new Chart(ctxM, {
+    type: 'doughnut',
+    data: { labels: Object.keys(motivosCount), datasets: [{ data: Object.values(motivosCount), backgroundColor: ['#ef4444','#f59e0b','#7c3aed','#00e5ff','#10b981','#fff'] }] },
+    options: { plugins:{legend:{labels:{color:'#fff',boxWidth:10,font:{size:10}}}} }
+  });
 
   document.getElementById('listaMotivos').innerHTML = Object.entries(motivosCount).map(([k,v])=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.06);padding:4px 0"><span>${k}</span><b>${v}</b></div>`).join('') || '<div style="opacity:.4">Sem canceladas</div>';
 }
@@ -240,7 +269,7 @@ window.addNota=async()=>{ const txt=document.getElementById('novaNota').value.tr
 window.deletar=async()=>{ if(idxAtual===null||!confirm('Deletar?')) return; const id=leads[idxAtual].id; leads.splice(idxAtual,1); fechar(); render(); await supabase.from('leads').delete().eq('id',id); }
 window.enviarMsg=(tipo)=>{ if(idxAtual===null) return; const l=leads[idxAtual]; let msg=tipo==='proposta'?`Olá ${l.nome}! Sua proposta ${l.valor} para ${l.negocio} pronta. PIX com 10% OFF hoje.`:`Olá ${l.nome}! Vi que se interessou por ${l.negocio} por ${l.valor}. Ainda tem interesse?`; window.open(`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank'); }
 window.exportarCSV=()=>{ let csv="Nome,Empresa,WhatsApp,Cidade,Segmento,Valor,Status,Motivo,Data\n"; leads.forEach(l=>{ csv+=`"${l.nome||''}","${l.empresa||''}","${l.whatsapp||''}","${l.cidade||''}","${l.negocio||''}","${l.valor||''}","${l.status||''}","${(l.motivo_perda||'').replace(/"/g,'') }","${l.data||''}"\n`; }); const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='leads.csv'; a.click(); }
-carregar();
+if(sessionOk) carregar();
 </script>
 </body>
 </html>
