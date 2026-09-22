@@ -5,6 +5,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
 const WHATSAPP_NUM="5517997474065";
 let valorProjeto=160, etapaAtual=1, roiChart=null, logoBase64=null, todosSelecionados=false;
+let salvando = false;
+let leadIdAtual = localStorage.getItem("leadIdAtual") || null;
+let timeoutSalvar = null;
 
 const TABELA_PRECOS = {
   "Clientes e CRM":15,"Estoque e Produtos":15,"Financeiro Completo":20,"Caixa PDV":15,
@@ -54,10 +57,12 @@ function nextEtapa(n){
   etapaAtual=n;
   document.getElementById("progress").style.width=(n*25)+"%";
   window.scrollTo({top:document.getElementById("simulador").offsetTop-80,behavior:"smooth"});
-  if(n>1) salvarLeadParcial();
+  if(n>1) salvarLeadParcial(false);
 }
 
 function reiniciarSimulacao(){
+  localStorage.removeItem("leadIdAtual");
+  leadIdAtual = null;
   document.querySelectorAll(".modulo").forEach(m=>m.checked=false);
   document.getElementById("descricao").value="";
   document.getElementById("negocio").selectedIndex=0;
@@ -79,7 +84,9 @@ function selecionarTodos(){
   document.querySelectorAll(".modulo").forEach(m=>m.checked=todosSelecionados);
   const btn=document.querySelector(".btn-selecionar-todos");
   if(btn) btn.innerHTML=todosSelecionados?'<i class="fa-solid fa-xmark"></i> Desmarcar Todos':'<i class="fa-solid fa-layer-group"></i> Selecionar Todos - <span>Plano completo no máx R$ 487/mês</span>';
-  calcular(); salvarLeadParcial();
+  calcular();
+  clearTimeout(timeoutSalvar);
+  timeoutSalvar = setTimeout(()=> salvarLeadParcial(false), 800);
 }
 
 function normalizar(s){ return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim(); }
@@ -113,7 +120,9 @@ function interpretarIA(){
   document.querySelectorAll(".modulo").forEach(c=>c.checked=false);
   document.querySelectorAll(".modulo").forEach(c=>{ if(detectados.includes(c.dataset.nome)) c.checked=true; });
   r.style.display="block"; r.innerHTML=`<strong>IA detectou ${detectados.length} módulos:</strong><br>• ${detectados.join("<br>• ")}`;
-  calcular(); salvarLeadParcial();
+  calcular();
+  clearTimeout(timeoutSalvar);
+  timeoutSalvar = setTimeout(()=> salvarLeadParcial(false), 800);
 }
 
 function calcular(){
@@ -169,7 +178,6 @@ function desenharROI(inv,eco){
   });
 }
 
-// ============ CORREÇÃO AQUI ============
 const SUPABASE_URL="https://ecrpiuhsbhuqcxbbpqfh.supabase.co";
 const SUPABASE_KEY="sb_publishable_I7Hw7KieW3VNFqb9LYrFoQ_tFWWABwl";
 let sbClient=null;
@@ -191,26 +199,26 @@ function validarInicial(){
 
 async function salvarLeadInicial(){
   if(!validarInicial()) return;
+  if(salvando) return;
   const btn=document.getElementById("btnContinuar1");
   if(btn){ btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Salvando...'; btn.disabled=true; }
-
   const ok = await salvarLeadParcial(true);
-
   if(btn){ btn.innerHTML='Continuar <i class="fa-solid fa-arrow-right"></i>'; btn.disabled=false; }
   if(ok){
     const ls=document.getElementById("leadStatus");
-    if(ls){ ls.style.display="block"; ls.innerHTML='<i class="fa-solid fa-check"></i> Lead salvo! Indo...'; }
+    if(ls){ ls.style.display="block"; ls.innerHTML='<i class="fa-solid fa-check"></i> Lead salvo!'; }
     setTimeout(()=>{ nextEtapa(2); }, 400);
-  } else {
-    alert("Erro ao salvar no Supabase - Roda o SQL que te mandei pra zerar a tabela!");
   }
 }
 
 async function salvarLeadParcial(forcar=false){
+  if(salvando) return false;
   const nome = document.getElementById("leadNomeInicio")?.value?.trim() || "";
   const zapRaw = document.getElementById("leadWhatsappInicio")?.value || "";
   const zapDigits = zapRaw.replace(/\D/g,'');
   if(!forcar && (nome.length<2 || zapDigits.length<10)) return false;
+
+  salvando = true;
 
   const lead={
     data:new Date().toLocaleString("pt-BR"),
@@ -232,15 +240,26 @@ async function salvarLeadParcial(forcar=false){
 
   try{
     const sb = await getSupabase();
-    const { data, error } = await sb.from('leads').insert([lead]).select();
-    if(error){
-      console.error("Erro Supabase:", error);
-      return false;
+    let result;
+    if(leadIdAtual){
+      // ATUALIZA o mesmo lead
+      result = await sb.from('leads').update(lead).eq('id', leadIdAtual).select();
+      console.log("♻️ Lead ATUALIZADO:", leadIdAtual);
+    } else {
+      // CRIA primeira vez
+      result = await sb.from('leads').insert([lead]).select();
+      if(result.data && result.data[0]){
+        leadIdAtual = result.data[0].id;
+        localStorage.setItem("leadIdAtual", leadIdAtual);
+        console.log("✅ Lead CRIADO:", leadIdAtual);
+      }
     }
-    console.log("✅ Lead salvo:", data);
+    if(result.error) throw result.error;
+    salvando = false;
     return true;
   }catch(e){
-    console.error("Erro ao salvar lead:", e);
+    console.error("Erro Supabase:", e);
+    salvando = false;
     return false;
   }
 }
@@ -291,8 +310,7 @@ async function gerarPDFBlob(){
 async function enviarWhatsappComPDF(){
   if(!validarInicial()){ nextEtapa(1); return; }
   calcular();
-  const ok = await salvarLeadParcial(true);
-  if(!ok){ alert("Não salvou no Supabase, mas vou abrir o WhatsApp"); }
+  await salvarLeadParcial(true);
   desenharROI(valorProjeto, Math.round(valorProjeto*0.85));
   await new Promise(r=>setTimeout(r, 600));
   const doc=await gerarPDFBlob();
@@ -321,7 +339,13 @@ function toggleGravacao(){
 }
 function pararGravacao(){ gravando=false; const b=document.getElementById("btnAudio"); if(b) b.classList.remove("gravando"); const i=document.getElementById("iconMic"); if(i) i.className="fa-solid fa-microphone"; const s=document.getElementById("audioStatus"); if(s) s.style.display="none"; try{ if(recognition) recognition.stop(); }catch(e){} }
 
-document.addEventListener("change",()=>{ if(etapaAtual>=2) calcular(); salvarLeadParcial(); });
+// CORRIGIDO - NÃO TRIPLICA MAIS
+document.addEventListener("change",()=>{
+  if(etapaAtual>=2) calcular();
+  clearTimeout(timeoutSalvar);
+  timeoutSalvar = setTimeout(()=>{ salvarLeadParcial(false); }, 1500);
+});
+
 window.salvarLeadInicial=salvarLeadInicial;
 window.nextEtapa=nextEtapa;
 window.selecionarTodos=selecionarTodos;
