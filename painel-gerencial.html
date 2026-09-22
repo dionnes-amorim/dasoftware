@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DA Software - PAINEL GERENCIAL V2</title>
+<title>DA Software - PAINEL</title>
 <link rel="icon" type="image/png" href="./assets/logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -12,18 +12,16 @@
 body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 .top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px}
 .card{background:#10162A;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px;transition:.3s}
-.card:hover{border-color:rgba(0,229,255,.3);transform:translateY(-2px)}
-.btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:600;font-size:12px;display:inline-flex;align-items:center;gap:6px;transition:.2s}
-.btn:active{transform:scale(.95)}
-.btn-primary{background:linear-gradient(135deg,#00e5ff,#7b61ff);color:#fff;box-shadow:0 4px 15px rgba(0,229,255,.3)}
+.card:hover{border-color:rgba(0,229,255,.2)}
+.btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:600;font-size:12px;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:linear-gradient(135deg,#00e5ff,#7b61ff);color:#fff;box-shadow:0 4px 15px rgba(0,229,255,.25)}
 .btn-danger{background:#ff3b3b;color:#fff}
 .btn-outline{background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff}
-.btn-outline:hover{background:rgba(255,255,255,.05)}
 .search-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .search-bar input{flex:1;min-width:220px;background:#10162A;border:1px solid rgba(255,255,255,.1);color:#fff;padding:11px 14px;border-radius:10px;outline:none;font-size:12px}
-.kanban{display:grid;grid-template-columns:repeat(4, 1fr);gap:14px;min-height:70vh}
+.kanban{display:grid;grid-template-columns:repeat(4, 1fr);gap:14px;min-height:65vh}
 @media(max-width:1000px){.kanban{grid-template-columns:repeat(4, 320px);overflow-x:auto;padding-bottom:20px}}
-.kanban-col{background:linear-gradient(180deg,#10162A,#0c1224);border-radius:18px;padding:14px;border:1px solid rgba(255,255,255,.06);min-height:70vh;position:relative}
+.kanban-col{background:linear-gradient(180deg,#10162A,#0c1224);border-radius:18px;padding:14px;border:1px solid rgba(255,255,255,.06);min-height:65vh}
 .kanban-col h4{font-size:12px;text-transform:uppercase;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .kanban-col h4 span{background:rgba(255,255,255,.1);padding:3px 10px;border-radius:20px;font-size:11px}
 .col-valor{font-size:11px;background:rgba(0,0,0,.35);padding:8px 10px;border-radius:10px;margin-bottom:12px;display:flex;justify-content:space-between;border:1px solid rgba(255,255,255,.05)}
@@ -31,11 +29,11 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 .kanban-col[data-status="Interesse"]{border-top:3px solid #f59e0b}
 .kanban-col[data-status="Em Execucao"]{border-top:3px solid #7c3aed}
 .kanban-col[data-status="Entregue"]{border-top:3px solid #10b981}
-.kanban-col[data-status="Canceladas"]{border-top:3px solid #ef4444;opacity:.9}
-.kanban-card{background:#172033;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;margin-bottom:10px;cursor:grab;transition:.25s;animation:fadeUp.4s ease}
-.kanban-card:hover{transform:translateY(-4px) scale(1.02);border-color:#00e5ff;box-shadow:0 12px 24px rgba(0,229,255,.18)}
-.kanban-card.dragging{opacity:.3;transform:rotate(3deg) scale(.95)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.kanban-col[data-status="Canceladas"]{border-top:3px solid #ef4444;opacity:.92}
+.kanban-card{background:#172033;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;margin-bottom:10px;cursor:grab;transition:.25s;animation:fadeUp.3s ease}
+.kanban-card:hover{transform:translateY(-3px);border-color:#00e5ff;box-shadow:0 10px 20px rgba(0,229,255,.15)}
+.kanban-card.dragging{opacity:.3;transform:rotate(2deg)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .tag{font-size:9px;padding:3px 8px;border-radius:20px;background:rgba(0,229,255,.15);color:#00e5ff}
 .valor{color:#00ff88;font-weight:700;font-size:12px}
 .badge-tempo{font-size:9px;padding:2px 6px;border-radius:10px;background:rgba(245,158,11,.15);color:#f59e0b;margin-left:6px}
@@ -50,13 +48,20 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 .zona-deletar.over{transform:translateX(-50%) scale(1.05);background:#ff0000}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,59,59,.6)}50%{box-shadow:0 0 0 12px rgba(255,59,59,0)}}
 #loader{position:fixed;inset:0;background:#050816;display:flex;align-items:center;justify-content:center;z-index:10000;flex-direction:column;gap:10px}
+/* GRAFICO PEQUENO E ENQUADRADO */
+.relatorio{margin-top:18px;display:grid;grid-template-columns:1fr 1fr 320px;gap:14px}
+@media(max-width:900px){.relatorio{grid-template-columns:1fr}}
+.grafico-box{padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.grafico-box canvas{max-width:260px!important;max-height:260px!important}
+.lista-motivos{font-size:11px}
+.lista-motivos div{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)}
 </style>
 </head>
 <body>
 <div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Verificando login...</div>
 
 <div class="top">
-<div><h1 style="font-size:18px"><i class="fa-solid fa-table-columns" style="color:#00e5ff"></i> PAINEL GERENCIAL V2</h1><p style="opacity:.5;font-size:11px">Potencial = Interesse + Execução • Canceladas não conta no potencial</p></div>
+<div><h1 style="font-size:18px"><i class="fa-solid fa-table-columns" style="color:#00e5ff"></i> PAINEL GERENCIAL</h1><p style="opacity:.5;font-size:11px">Potencial = Interesse + Execução • Canceladas sai do potencial</p></div>
 <div style="display:flex;gap:6px;flex-wrap:wrap">
 <button class="btn btn-outline" onclick="exportarCSV()"><i class="fa-solid fa-file-csv"></i> CSV</button>
 <button class="btn btn-outline" onclick="location.href='./index.html'"><i class="fa-solid fa-house"></i></button>
@@ -66,26 +71,40 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 </div>
 
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px">
-<div class="card"><h3 id="totalLeads">0</h3><small style="opacity:.5">Total Leads</small><div style="font-size:10px;opacity:.4;margin-top:4px" id="statHoje">0 hoje</div></div>
-<div class="card" style="border-color:rgba(0,229,255,.3)"><h3 id="totalValor" style="color:#00e5ff">R$ 0</h3><small style="opacity:.5">Potencial (sem canceladas)</small><div style="font-size:10px;opacity:.4;margin-top:4px">Interesse + Execução</div></div>
-<div class="card" style="border-color:#10b981"><h3 id="totalLucro" style="color:#10b981">R$ 0</h3><small style="opacity:.5">Lucro Real (Entregues)</small><div style="font-size:10px;opacity:.4;margin-top:4px" id="statTicket">Ticket médio R$ 0</div></div>
-<div class="card" style="border-color:#f59e0b"><h3 id="totalConversao">0%</h3><small style="opacity:.5">Conversão</small><div style="font-size:10px;opacity:.4;margin-top:4px">Entregues / Total</div></div>
-<div class="card" style="border-color:#ef4444"><h3 id="totalCancel" style="color:#ef4444">0</h3><small style="opacity:.5">Canceladas</small><div style="font-size:10px;opacity:.4;margin-top:4px" id="statPerdido">R$ 0 perdido</div></div>
+<div class="card"><h3 id="totalLeads">0</h3><small style="opacity:.5">Total</small><div style="font-size:10px;opacity:.4;margin-top:4px" id="statHoje">0 hoje</div></div>
+<div class="card" style="border-color:rgba(0,229,255,.3)"><h3 id="totalValor" style="color:#00e5ff">R$ 0</h3><small style="opacity:.5">Potencial (sem canceladas)</small></div>
+<div class="card" style="border-color:#10b981"><h3 id="totalLucro" style="color:#10b981">R$ 0</h3><small style="opacity:.5">Lucro Entregues</small><div style="font-size:10px;opacity:.4" id="statTicket">Ticket R$ 0</div></div>
+<div class="card" style="border-color:#f59e0b"><h3 id="totalConversao">0%</h3><small style="opacity:.5">Conversão</small></div>
+<div class="card" style="border-color:#ef4444"><h3 id="totalCancel" style="color:#ef4444">0</h3><small style="opacity:.5">Canceladas</small><div style="font-size:10px;opacity:.4" id="statPerdido">R$ 0 perdido</div></div>
 </div>
 
 <div class="search-bar">
 <input id="busca" placeholder="Buscar nome, empresa, zap..." oninput="render()">
 <select id="filtroTempo" onchange="render()" style="background:#10162A;border:1px solid rgba(255,255,255,.1);color:#fff;padding:11px;border-radius:10px;font-size:12px">
-<option value="todos">Todos</option><option value="hoje">Hoje</option><option value="semana">Esta semana</option><option value="interesse">Só Interesse (frio)</option>
+<option value="todos">Todos</option><option value="hoje">Hoje</option><option value="semana">Esta semana</option><option value="interesse">Só Interesse</option>
 </select>
 </div>
 
-<div class="card" style="margin-bottom:14px;display:grid;grid-template-columns:1fr 200px;gap:10px;align-items:center">
-<div><h4 style="font-size:12px"><i class="fa-solid fa-chart-pie" style="color:#ef4444"></i> MOTIVOS DE PERDA</h4><p style="opacity:.5;font-size:11px">Pra você saber onde tá perdendo dinheiro</p></div>
-<canvas id="chartMotivos" height="120"></canvas>
+<!-- KANBAN PRIMEIRO -->
+<div class="kanban" id="kanbanBoard"></div>
+
+<!-- RELATORIO DEPOIS - PEQUENO E ENQUADRADO -->
+<div class="relatorio">
+  <div class="card">
+    <h4 style="font-size:12px;margin-bottom:10px"><i class="fa-solid fa-chart-simple" style="color:#00e5ff"></i> FUNIL</h4>
+    <canvas id="chartFunil" height="140"></canvas>
+  </div>
+  <div class="card">
+    <h4 style="font-size:12px;margin-bottom:10px"><i class="fa-solid fa-sack-dollar" style="color:#10b981"></i> VALOR POR COLUNA</h4>
+    <canvas id="chartValor" height="140"></canvas>
+  </div>
+  <div class="card grafico-box">
+    <h4 style="font-size:12px;margin-bottom:8px;width:100%"><i class="fa-solid fa-triangle-exclamation" style="color:#ef4444"></i> MOTIVOS DE PERDA</h4>
+    <canvas id="chartMotivos"></canvas>
+    <div id="listaMotivos" class="lista-motivos" style="width:100%;margin-top:12px"></div>
+  </div>
 </div>
 
-<div class="kanban" id="kanbanBoard"></div>
 <div id="zonaDeletar" class="zona-deletar"><i class="fa-solid fa-trash"></i> ARRASTE AQUI PARA DELETAR</div>
 
 <div id="modalLead" class="modal" onclick="if(event.target.id==='modalLead') fechar()"><div class="modal-content">
@@ -96,25 +115,20 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 <div><small>Cidade</small><br><span id="mCidade"></span></div>
 <div><small>Segmento</small><br><span id="mNegocio" class="tag"></span></div>
 </div>
-<div style="margin-top:10px"><small>Escopo / Descrição</small><div id="mEscopo" style="font-size:11px;background:#0a0e1f;padding:10px;border-radius:10px;margin-top:4px;white-space:pre-wrap"></div></div>
+<div style="margin-top:10px"><small>Escopo</small><div id="mEscopo" style="font-size:11px;background:#0a0e1f;padding:10px;border-radius:10px;margin-top:4px;white-space:pre-wrap"></div></div>
 <hr style="margin:12px 0;border-color:rgba(255,255,255,.1)">
-<select id="mStatus" onchange="trocarStatus()">
-<option>Interesse</option><option>Em Execucao</option><option>Entregue</option><option>Canceladas</option>
-</select>
+<select id="mStatus" onchange="trocarStatus()"><option>Interesse</option><option>Em Execucao</option><option>Entregue</option><option>Canceladas</option></select>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="mProx" type="date" onchange="salvar()"><input id="mCusto" type="number" placeholder="Custo R$" onchange="salvar()"></div>
-<input id="mMotivo" placeholder="Motivo do cancelamento" onchange="salvar()">
+<input id="mMotivo" placeholder="Motivo" onchange="salvar()">
 <div id="listaNotas" style="margin-top:10px"></div>
 <textarea id="novaNota" rows="2" placeholder="Nova nota..."></textarea>
 <button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="addNota()">+ Nota</button>
-<div style="display:flex;gap:6px;margin-top:10px">
-<button class="btn btn-outline" style="flex:1" onclick="enviarMsg('proposta')"><i class="fa-brands fa-whatsapp"></i> Proposta</button>
-<button class="btn btn-outline" style="flex:1" onclick="enviarMsg('follow')">Follow-up</button>
-</div>
+<div style="display:flex;gap:6px;margin-top:10px"><button class="btn btn-outline" style="flex:1" onclick="enviarMsg('proposta')"><i class="fa-brands fa-whatsapp"></i> Proposta</button><button class="btn btn-outline" style="flex:1" onclick="enviarMsg('follow')">Follow</button></div>
 <div style="display:flex;gap:8px;margin-top:14px"><button class="btn btn-outline" style="flex:1" onclick="fechar()">Fechar</button><button class="btn btn-danger" style="flex:1" onclick="deletar()">Deletar</button></div>
 </div></div>
 
-<div id="modalMotivo" class="modal"><div class="modal-content" style="text-align:center;border-color:#ef4444"><h3 style="color:#ef4444"><i class="fa-solid fa-triangle-exclamation"></i> Motivo do cancelamento?</h3>
-<select id="motivoSelect" style="margin-top:12px"><option value="">Selecione...</option><option>Valor alto</option><option>Demorou responder</option><option>Concorrente mais barato</option><option>Sem dinheiro no momento</option><option>Desistiu do projeto</option><option>Só curioso</option><option>Outro</option></select>
+<div id="modalMotivo" class="modal"><div class="modal-content" style="text-align:center;border-color:#ef4444"><h3 style="color:#ef4444">Motivo do cancelamento?</h3>
+<select id="motivoSelect" style="margin-top:12px"><option value="">Selecione...</option><option>Valor alto</option><option>Demorou responder</option><option>Concorrente mais barato</option><option>Sem dinheiro</option><option>Desistiu</option><option>Só curioso</option><option>Outro</option></select>
 <input id="motivoObs" placeholder="Detalhe opcional">
 <button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="confirmarCancel()">Confirmar</button>
 <button class="btn btn-outline" style="width:100%;margin-top:6px" onclick="cancelarMotivo()">Cancelar</button>
@@ -131,49 +145,28 @@ document.getElementById('loader').style.display='none';
 window.supabase=supabase;
 window.logout=async()=>{ await supabase.auth.signOut(); location.href='./login.html'; };
 
-let leads=[], idxAtual=null, dragIdx=null, pendenteCancel=null, chartMotivos=null;
+let leads=[], idxAtual=null, dragIdx=null, pendenteCancel=null, chartM=null, chartF=null, chartV=null;
 
 function parseValor(v){ if(!v) return 0; let s=v.toString().replace(/R\$/gi,"").trim(); if(s.includes(",")&&s.includes(".")) s=s.replace(/\./g,"").replace(",","."); else if(s.includes(",")) s=s.replace(",","."); let n=parseFloat(s); if(isNaN(n)) n=parseFloat(v.toString().replace(/[^\d]/g,""))/100; return n||0; }
-function diasDesde(dataStr){
-  if(!dataStr) return 0;
-  try{
-    const partes=dataStr.split(',')[0].split('/');
-    if(partes.length!==3) return 0;
-    const d=new Date(partes[2],partes[1]-1,partes[0]);
-    return Math.floor((new Date()-d)/(1000*60*60*24));
-  }catch(e){return 0}
-}
-function isInteresse(l){
-  const desc=(l.descricao||'').toLowerCase();
-  const escopo=(l.escopo||'').toLowerCase();
-  const etapa=(l.etapa||'').toLowerCase();
-  return desc.includes('parou no inicio') || escopo==='base' || escopo==='' || etapa.includes('etapa 1');
-}
-async function atualizarBanco(l){
-  const {error}=await supabase.from('leads').update({status:l.status,custo:l.custo||0,prox_contato:l.prox_contato||null,motivo_perda:l.motivo_perda||null,notas:l.notas||[]}).eq('id',l.id);
-  if(error) alert(error.message);
-}
+function diasDesde(dStr){ if(!dStr) return 0; try{ const p=dStr.split(',')[0].split('/'); if(p.length!==3) return 0; const d=new Date(p[2],p[1]-1,p[0]); return Math.floor((new Date()-d)/(1000*60*60*24)); }catch(e){return 0} }
+function isInteresse(l){ const desc=(l.descricao||'').toLowerCase(); return desc.includes('parou no inicio') || (l.escopo||'').toLowerCase()==='base'; }
+async function atualizarBanco(l){ const {error}=await supabase.from('leads').update({status:l.status,custo:l.custo||0,prox_contato:l.prox_contato||null,motivo_perda:l.motivo_perda||null,notas:l.notas||[]}).eq('id',l.id); if(error) alert(error.message); }
+
 window.carregar=async()=>{
   const {data,error}=await supabase.from('leads').select('*').order('id',{ascending:false});
   if(error){ alert(error.message); return; }
-  leads=data.map(l=>{
-    let s=l.status||'Interesse';
-    if(['Nova','Em Analise','Aprovada','Finalizada'].includes(s)) s='Interesse';
-    if(s==='Negada') s='Canceladas';
-    if(isInteresse(l) && s!=='Em Execucao' && s!=='Entregue' && s!=='Canceladas') s='Interesse';
-    return {...l, status:s, notas:l.notas||[], custo:l.custo||0, proxContato:l.prox_contato||'', motivoPerda:l.motivo_perda||''};
-  });
+  leads=data.map(l=>{ let s=l.status||'Interesse'; if(['Nova','Em Analise','Aprovada','Finalizada'].includes(s)) s='Interesse'; if(s==='Negada') s='Canceladas'; if(isInteresse(l) && s!=='Em Execucao' && s!=='Entregue' && s!=='Canceladas') s='Interesse'; return {...l, status:s, notas:l.notas||[], custo:l.custo||0, proxContato:l.prox_contato||'', motivoPerda:l.motivo_perda||''}; });
   render();
 }
+
 window.render=()=>{
   const busca=(document.getElementById('busca').value||'').toLowerCase();
   const filtro=document.getElementById('filtroTempo').value;
   let f=leads.filter(l=> (`${l.nome||''} ${l.empresa||''} ${l.whatsapp||''} ${l.cidade||''} ${l.negocio||''}`).toLowerCase().includes(busca));
-  if(filtro==='hoje') f=f.filter(l=>(l.data||'').includes(new Date().toLocaleDateString('pt-BR')));
+  if(filtro==='hoje') f=f.filter(l=> (l.data||'').includes(new Date().toLocaleDateString('pt-BR')));
   if(filtro==='semana') f=f.filter(l=> diasDesde(l.data)<=7);
   if(filtro==='interesse') f=f.filter(l=> l.status==='Interesse');
 
-  // CORREÇÃO DO POTENCIAL - SEM CANCELADAS
   const potencial = f.filter(l=> l.status!=='Canceladas' && l.status!=='Entregue');
   const potencialValor = potencial.reduce((a,l)=>a+parseValor(l.valor),0);
   const lucro = f.filter(l=>l.status==='Entregue').reduce((a,l)=>a+(parseValor(l.valor)-(Number(l.custo)||0)),0);
@@ -190,15 +183,9 @@ window.render=()=>{
   document.getElementById('totalConversao').innerText=conv+'%';
   document.getElementById('statHoje').innerText=hoje+' hoje';
   document.getElementById('statPerdido').innerText=perdido.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})+' perdido';
-  document.getElementById('statTicket').innerText='Ticket médio '+ticket.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  document.getElementById('statTicket').innerText='Ticket '+ticket.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 
-  // GRAFICO MOTIVOS
-  const motivosCount={};
-  canceladas.forEach(l=>{ const m=(l.motivo_perda||'Sem motivo').split(' - ')[0]; motivosCount[m]=(motivosCount[m]||0)+1; });
-  const ctx=document.getElementById('chartMotivos');
-  if(chartMotivos) chartMotivos.destroy();
-  chartMotivos=new Chart(ctx,{type:'doughnut',data:{labels:Object.keys(motivosCount),datasets:[{data:Object.values(motivosCount),backgroundColor:['#ef4444','#f59e0b','#7c3aed','#10b981','#00e5ff','#ff6b6b']}]},options:{plugins:{legend:{labels:{color:'#fff',font:{size:9}},position:'bottom'}},responsive:true}});
-
+  // KANBAN
   const colunas=['Interesse','Em Execucao','Entregue','Canceladas'];
   let html='';
   colunas.forEach(col=>{
@@ -212,78 +199,50 @@ window.render=()=>{
       html+=`<div class="kanban-card" draggable="true" ondragstart="drag(event,${idx})" ondragend="dragEnd()" onclick="abrir(${idx})">
         <div style="display:flex;justify-content:space-between"><b style="font-size:13px">${l.nome||'Sem nome'}</b><span class="badge-tempo ${dias>3?'atrasado':''}">${dias===0?'hoje':dias+'d'}</span></div>
         <small style="opacity:.6">${l.empresa||l.cidade||''} ${(l.notas||[]).length? '• 📝'+l.notas.length : ''}</small>
-        <div style="margin-top:6px;display:flex;justify-content:space-between;align-items:center"><span class="valor">${l.valor||''}</span><span class="tag">${l.negocio||''}</span></div>
-        ${l.status==='Canceladas'&&l.motivoPerda?`<div style="margin-top:6px;font-size:10px;background:rgba(239,68,68,.15);padding:4px 8px;border-radius:6px;color:#ff8a8a"><i class="fa-solid fa-circle-info"></i> ${l.motivoPerda}</div>`:''}
+        <div style="margin-top:6px;display:flex;justify-content:space-between"><span class="valor">${l.valor||''}</span><span class="tag">${l.negocio||''}</span></div>
+        ${l.status==='Canceladas'&&l.motivoPerda?`<div style="margin-top:6px;font-size:10px;background:rgba(239,68,68,.15);padding:4px 8px;border-radius:6px;color:#ff8a8a">${l.motivoPerda}</div>`:''}
       </div>`;
     });
     html+=`</div>`;
   });
   document.getElementById('kanbanBoard').innerHTML=html;
+
+  // GRAFICOS - PEQUENOS
+  const porCol = colunas.map(c=> f.filter(l=>l.status===c).length);
+  const valorPorCol = colunas.map(c=> f.filter(l=>l.status===c).reduce((a,l)=>a+parseValor(l.valor),0));
+  const motivosCount={}; canceladas.forEach(l=>{ const m=(l.motivo_perda||'Sem motivo').split(' - ')[0]; motivosCount[m]=(motivosCount[m]||0)+1; });
+
+  if(chartF) chartF.destroy();
+  chartF=new Chart(document.getElementById('chartFunil'),{type:'bar',data:{labels:['Interesse','Execução','Entregue','Canceladas'],datasets:[{data:porCol,backgroundColor:['#f59e0b','#7c3aed','#10b981','#ef4444']}]},options:{plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#fff',font:{size:10}},grid:{color:'rgba(255,255,255,.05)'},beginAtZero:true},x:{ticks:{color:'#fff',font:{size:10}},grid:{display:false}}}}});
+
+  if(chartV) chartV.destroy();
+  chartV=new Chart(document.getElementById('chartValor'),{type:'bar',data:{labels:['Interesse','Exec','Entregue','Cancel'],datasets:[{data:valorPorCol,backgroundColor:['#f59e0b','#7c3aed','#10b981','#ef4444']}]},options:{plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#fff',font:{size:10},callback:v=>'R$'+v},grid:{color:'rgba(255,255,255,.05)'}},x:{ticks:{color:'#fff',font:{size:10}},grid:{display:false}}}}});
+
+  if(chartM) chartM.destroy();
+  chartM=new Chart(document.getElementById('chartMotivos'),{type:'doughnut',data:{labels:Object.keys(motivosCount),datasets:[{data:Object.values(motivosCount),backgroundColor:['#ef4444','#f59e0b','#7c3aed','#00e5ff','#10b981','#fff'],borderWidth:0}]},options:{plugins:{legend:{display:false}},cutout:'65%'}});
+
+  document.getElementById('listaMotivos').innerHTML = Object.entries(motivosCount).map(([k,v])=>`<div><span>${k}</span><b>${v}</b></div>`).join('') || '<div style="opacity:.4">Sem canceladas</div>';
 }
+
 window.drag=(e,idx)=>{ dragIdx=idx; e.target.classList.add('dragging'); document.getElementById('zonaDeletar').classList.add('show'); }
 window.dragEnd=()=>{ document.getElementById('zonaDeletar').classList.remove('show'); document.getElementById('zonaDeletar').classList.remove('over'); document.querySelectorAll('.kanban-card').forEach(c=>c.classList.remove('dragging')); }
-window.drop=async(e)=>{
-  e.preventDefault(); const novo=e.currentTarget.dataset.status; if(dragIdx===null) return;
-  if(novo==='Canceladas'){ pendenteCancel=dragIdx; document.getElementById('modalMotivo').classList.add('show'); return; }
-  leads[dragIdx].status=novo; render(); await atualizarBanco(leads[dragIdx]); dragEnd(); dragIdx=null;
-}
-window.confirmarCancel=async()=>{
-  const motivo=document.getElementById('motivoSelect').value; if(!motivo){ alert('Selecione o motivo'); return; }
-  const obs=document.getElementById('motivoObs').value;
-  leads[pendenteCancel].status='Canceladas'; leads[pendenteCancel].motivoPerda=motivo+(obs?' - '+obs:''); leads[pendenteCancel].motivo_perda=leads[pendenteCancel].motivoPerda;
-  document.getElementById('modalMotivo').classList.remove('show'); render(); await atualizarBanco(leads[pendenteCancel]); dragEnd(); dragIdx=null; pendenteCancel=null;
-}
+window.drop=async(e)=>{ e.preventDefault(); const novo=e.currentTarget.dataset.status; if(dragIdx===null) return; if(novo==='Canceladas'){ pendenteCancel=dragIdx; document.getElementById('modalMotivo').classList.add('show'); return; } leads[dragIdx].status=novo; render(); await atualizarBanco(leads[dragIdx]); dragEnd(); dragIdx=null; }
+window.confirmarCancel=async()=>{ const motivo=document.getElementById('motivoSelect').value; if(!motivo){ alert('Selecione'); return; } const obs=document.getElementById('motivoObs').value; leads[pendenteCancel].status='Canceladas'; leads[pendenteCancel].motivoPerda=motivo+(obs?' - '+obs:''); leads[pendenteCancel].motivo_perda=leads[pendenteCancel].motivoPerda; document.getElementById('modalMotivo').classList.remove('show'); render(); await atualizarBanco(leads[pendenteCancel]); dragEnd(); dragIdx=null; pendenteCancel=null; }
 window.cancelarMotivo=()=>{ document.getElementById('modalMotivo').classList.remove('show'); dragEnd(); dragIdx=null; pendenteCancel=null; }
-window.dropDeletar=async(e)=>{
-  e.preventDefault(); if(dragIdx===null) return;
-  if(!confirm(`Deletar ${leads[dragIdx].nome}?`)){ dragEnd(); dragIdx=null; return; }
-  const id=leads[dragIdx].id; leads.splice(dragIdx,1); render(); dragEnd(); dragIdx=null;
-  if(id) await supabase.from('leads').delete().eq('id',id);
-}
+window.dropDeletar=async(e)=>{ e.preventDefault(); if(dragIdx===null) return; if(!confirm(`Deletar ${leads[dragIdx].nome}?`)){ dragEnd(); dragIdx=null; return; } const id=leads[dragIdx].id; leads.splice(dragIdx,1); render(); dragEnd(); dragIdx=null; if(id) await supabase.from('leads').delete().eq('id',id); }
 document.getElementById('zonaDeletar').addEventListener('dragover',e=>{e.preventDefault(); e.currentTarget.classList.add('over')});
 document.getElementById('zonaDeletar').addEventListener('dragleave',e=>e.currentTarget.classList.remove('over'));
 document.getElementById('zonaDeletar').addEventListener('drop',window.dropDeletar);
 
-window.abrir=(idx)=>{
-  idxAtual=idx; const l=leads[idx];
-  document.getElementById('mNome').innerText=l.nome||'';
-  document.getElementById('mSub').innerText=`${l.empresa||''} • ${l.email||''} • ${l.cidade||''} • ${l.data||''}`;
-  document.getElementById('mZap').innerText=l.whatsapp||''; document.getElementById('mZap').href=`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}`;
-  document.getElementById('mValor').innerText=l.valor||''; document.getElementById('mCidade').innerText=l.cidade||''; document.getElementById('mNegocio').innerText=l.negocio||'';
-  document.getElementById('mEscopo').innerText=`${l.escopo||''}\n\n${l.descricao||''}`;
-  document.getElementById('mStatus').value=l.status; document.getElementById('mProx').value=l.prox_contato||''; document.getElementById('mCusto').value=l.custo||''; document.getElementById('mMotivo').value=l.motivo_perda||'';
-  document.getElementById('listaNotas').innerHTML=(l.notas||[]).map(n=>`<div class="note-item"><small>${n.data}</small><br>${n.texto}</div>`).join('')||'<p style="opacity:.4;font-size:11px">Sem notas</p>';
-  document.getElementById('modalLead').classList.add('show');
-}
+window.abrir=(idx)=>{ idxAtual=idx; const l=leads[idx]; document.getElementById('mNome').innerText=l.nome||''; document.getElementById('mSub').innerText=`${l.empresa||''} • ${l.email||''} • ${l.cidade||''} • ${l.data||''}`; document.getElementById('mZap').innerText=l.whatsapp||''; document.getElementById('mZap').href=`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}`; document.getElementById('mValor').innerText=l.valor||''; document.getElementById('mCidade').innerText=l.cidade||''; document.getElementById('mNegocio').innerText=l.negocio||''; document.getElementById('mEscopo').innerText=`${l.escopo||''}\n\n${l.descricao||''}`; document.getElementById('mStatus').value=l.status; document.getElementById('mProx').value=l.prox_contato||''; document.getElementById('mCusto').value=l.custo||''; document.getElementById('mMotivo').value=l.motivo_perda||''; document.getElementById('listaNotas').innerHTML=(l.notas||[]).map(n=>`<div class="note-item"><small>${n.data}</small><br>${n.texto}</div>`).join('')||'<p style="opacity:.4;font-size:11px">Sem notas</p>'; document.getElementById('modalLead').classList.add('show'); }
 window.fechar=()=>{ document.getElementById('modalLead').classList.remove('show'); idxAtual=null; }
-window.copiarZap=()=>{ const zap=document.getElementById('mZap').innerText; navigator.clipboard.writeText(zap); alert('Zap copiado: '+zap); }
-window.trocarStatus=async()=>{
-  const novo=document.getElementById('mStatus').value;
-  if(novo==='Canceladas' && leads[idxAtual].status!=='Canceladas'){ pendenteCancel=idxAtual; document.getElementById('modalMotivo').classList.add('show'); document.getElementById('mStatus').value=leads[idxAtual].status; return; }
-  await salvar();
-}
-window.salvar=async()=>{
-  if(idxAtual===null) return; const l=leads[idxAtual];
-  l.status=document.getElementById('mStatus').value; l.prox_contato=document.getElementById('mProx').value; l.custo=Number(document.getElementById('mCusto').value)||0; l.motivo_perda=document.getElementById('mMotivo').value; l.motivoPerda=l.motivo_perda;
-  render(); await atualizarBanco(l);
-}
-window.addNota=async()=>{
-  const txt=document.getElementById('novaNota').value.trim(); if(!txt||idxAtual===null) return;
-  leads[idxAtual].notas=leads[idxAtual].notas||[]; leads[idxAtual].notas.push({data:new Date().toLocaleString('pt-BR'), texto:txt});
-  document.getElementById('novaNota').value=''; abrir(idxAtual); await atualizarBanco(leads[idxAtual]);
-}
+window.copiarZap=()=>{ navigator.clipboard.writeText(document.getElementById('mZap').innerText); alert('Copiado!'); }
+window.trocarStatus=async()=>{ const novo=document.getElementById('mStatus').value; if(novo==='Canceladas' && leads[idxAtual].status!=='Canceladas'){ pendenteCancel=idxAtual; document.getElementById('modalMotivo').classList.add('show'); document.getElementById('mStatus').value=leads[idxAtual].status; return; } await salvar(); }
+window.salvar=async()=>{ if(idxAtual===null) return; const l=leads[idxAtual]; l.status=document.getElementById('mStatus').value; l.prox_contato=document.getElementById('mProx').value; l.custo=Number(document.getElementById('mCusto').value)||0; l.motivo_perda=document.getElementById('mMotivo').value; l.motivoPerda=l.motivo_perda; render(); await atualizarBanco(l); }
+window.addNota=async()=>{ const txt=document.getElementById('novaNota').value.trim(); if(!txt||idxAtual===null) return; leads[idxAtual].notas=leads[idxAtual].notas||[]; leads[idxAtual].notas.push({data:new Date().toLocaleString('pt-BR'), texto:txt}); document.getElementById('novaNota').value=''; abrir(idxAtual); await atualizarBanco(leads[idxAtual]); }
 window.deletar=async()=>{ if(idxAtual===null||!confirm('Deletar?')) return; const id=leads[idxAtual].id; leads.splice(idxAtual,1); fechar(); render(); await supabase.from('leads').delete().eq('id',id); }
-window.enviarMsg=(tipo)=>{
-  if(idxAtual===null) return; const l=leads[idxAtual]; let msg='';
-  if(tipo==='proposta') msg=`Olá ${l.nome}! Sua proposta ${l.valor} para ${l.negocio} pronta. PIX com 10% OFF hoje.`;
-  if(tipo==='follow') msg=`Olá ${l.nome}! Vi que se interessou por ${l.negocio} por ${l.valor}. Ainda tem interesse?`;
-  window.open(`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');
-}
-window.exportarCSV=()=>{
-  let csv="Nome,Empresa,WhatsApp,Cidade,Segmento,Valor,Status,Motivo,Data\n";
-  leads.forEach(l=>{ csv+=`"${l.nome||''}","${l.empresa||''}","${l.whatsapp||''}","${l.cidade||''}","${l.negocio||''}","${l.valor||''}","${l.status||''}","${(l.motivo_perda||'').replace(/"/g,'') }","${l.data||''}"\n`; });
-  const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='leads-DA.csv'; a.click();
-}
+window.enviarMsg=(tipo)=>{ if(idxAtual===null) return; const l=leads[idxAtual]; let msg=tipo==='proposta'?`Olá ${l.nome}! Sua proposta ${l.valor} para ${l.negocio} pronta. PIX com 10% OFF hoje.`:`Olá ${l.nome}! Vi que se interessou por ${l.negocio} por ${l.valor}. Ainda tem interesse?`; window.open(`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank'); }
+window.exportarCSV=()=>{ let csv="Nome,Empresa,WhatsApp,Cidade,Segmento,Valor,Status,Motivo,Data\n"; leads.forEach(l=>{ csv+=`"${l.nome||''}","${l.empresa||''}","${l.whatsapp||''}","${l.cidade||''}","${l.negocio||''}","${l.valor||''}","${l.status||''}","${(l.motivo_perda||'').replace(/"/g,'') }","${l.data||''}"\n`; }); const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='leads-DA.csv'; a.click(); }
 carregar();
 </script>
 </body>
