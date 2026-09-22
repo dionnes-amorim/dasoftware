@@ -2,20 +2,53 @@ document.addEventListener("DOMContentLoaded", ()=>{
   try{ AOS.init({ duration: 800, once: false, offset: 50 }); }catch(e){}
   try{ particlesJS("particles-js",{particles:{number:{value:80},color:{value:["#00e5ff","#7b61ff"]},shape:{type:"circle"},opacity:{value:0.5,random:true},size:{value:3,random:true},line_linked:{enable:true,distance:150,color:"#ffffff",opacity:0.15,width:1},move:{enable:true,speed:1.2,random:true}}}); }catch(e){}
 });
+
 const WHATSAPP_NUM="5517997474065";
 let valorProjeto=160, etapaAtual=1, roiChart=null, logoBase64=null, todosSelecionados=false;
-const TABELA_PRECOS = {"Clientes e CRM":15,"Estoque e Produtos":15,"Financeiro Completo":20,"Caixa PDV":15,"Ordens de Servico":15,"WhatsApp Automatico":20,"Agendamento":10,"Dashboard e Relatorios":15,"App Android":35,"App iOS":35,"Multi-empresas":15,"Nota Fiscal NFe":25,"Delivery e iFood":15,"Comissoes":8,"Contratos":8,"Chat Interno":8,"Assinatura Digital":10,"Fidelidade Cashback":10,"Catalogo Online":10,"Backup Automatico":8};
-function getPrecoModulo(nome){ return TABELA_PRECOS[nome]!== undefined? TABELA_PRECOS[nome] : 10; }
-function carregarLogoPDF(){ const img=new Image(); img.crossOrigin="anonymous"; img.src='./assets/logo.png'; img.onload=function(){ const c=document.createElement('canvas'); c.width=img.width; c.height=img.height; c.getContext('2d').drawImage(img,0,0); logoBase64=c.toDataURL('image/png'); }; }
+
+const TABELA_PRECOS = {
+  "Clientes e CRM":15,"Estoque e Produtos":15,"Financeiro Completo":20,"Caixa PDV":15,
+  "Ordens de Servico":15,"WhatsApp Automatico":20,"Agendamento":10,"Dashboard e Relatorios":15,
+  "App Android":35,"App iOS":35,"Multi-empresas":15,"Nota Fiscal NFe":25,"Delivery e iFood":15,
+  "Comissoes":8,"Contratos":8,"Chat Interno":8,"Assinatura Digital":10,"Fidelidade Cashback":10,
+  "Catalogo Online":10,"Backup Automatico":8
+};
+
+function getPrecoModulo(nome){ return TABELA_PRECOS[nome]!==undefined? TABELA_PRECOS[nome]:10; }
+
+function carregarLogoPDF(){
+  const img=new Image(); img.crossOrigin="anonymous"; img.src='./assets/logo.png';
+  img.onload=function(){
+    const c=document.createElement('canvas'); c.width=img.width; c.height=img.height;
+    c.getContext('2d').drawImage(img,0,0); logoBase64=c.toDataURL('image/png');
+  };
+}
 carregarLogoPDF();
+
 const themeToggle=document.getElementById("themeToggle");
-function aplicarTema(t){ document.documentElement.setAttribute("data-theme",t); localStorage.setItem("theme",t); if(themeToggle) themeToggle.innerHTML=t==="light"?'<i class="fa-solid fa-moon"></i>':'<i class="fa-solid fa-sun"></i>'; }
-if(themeToggle) themeToggle.addEventListener("click",()=>{ const a=document.documentElement.getAttribute("data-theme")||"dark"; aplicarTema(a==="light"?"dark":"light"); });
+function aplicarTema(t){
+  document.documentElement.setAttribute("data-theme",t);
+  localStorage.setItem("theme",t);
+  if(themeToggle) themeToggle.innerHTML=t==="light"?'<i class="fa-solid fa-moon"></i>':'<i class="fa-solid fa-sun"></i>';
+}
+if(themeToggle) themeToggle.addEventListener("click",()=>{
+  const a=document.documentElement.getAttribute("data-theme")||"dark";
+  aplicarTema(a==="light"?"dark":"light");
+});
 aplicarTema(localStorage.getItem("theme")||"dark");
 
 // LIGHTBOX
-function abrirImg(src){ const m=document.getElementById("img-modal"); const i=document.getElementById("img-modal-src"); i.src=src; m.classList.add("show"); document.body.style.overflow="hidden"; }
-function fecharImg(){ const m=document.getElementById("img-modal"); m.classList.remove("show"); document.body.style.overflow=""; }
+function abrirImg(src){
+  const m=document.getElementById("img-modal");
+  const i=document.getElementById("img-modal-src");
+  if(!m||!i) return;
+  i.src=src; m.classList.add("show"); document.body.style.overflow="hidden";
+}
+function fecharImg(){
+  const m=document.getElementById("img-modal");
+  if(m){ m.classList.remove("show"); document.body.style.overflow=""; }
+}
+window.abrirImg=abrirImg; window.fecharImg=fecharImg;
 
 function nextEtapa(n){
   document.querySelectorAll(".etapa").forEach(e=>e.classList.remove("active"));
@@ -25,6 +58,7 @@ function nextEtapa(n){
   window.scrollTo({top:document.getElementById("simulador").offsetTop-80,behavior:"smooth"});
   salvarLeadParcial();
 }
+
 function reiniciarSimulacao(){
   document.querySelectorAll(".modulo").forEach(m=>m.checked=false);
   document.getElementById("descricao").value="";
@@ -33,14 +67,15 @@ function reiniciarSimulacao(){
   document.getElementById("leadEmpresa").value="";
   document.getElementById("leadEmail").value="";
   document.getElementById("leadCidade").value="";
-  const elNomeInicio = document.getElementById("leadNomeInicio");
-  const elZapInicio = document.getElementById("leadWhatsappInicio");
+  const elNomeInicio=document.getElementById("leadNomeInicio");
+  const elZapInicio=document.getElementById("leadWhatsappInicio");
   if(elNomeInicio) elNomeInicio.value="";
   if(elZapInicio) elZapInicio.value="";
-  document.getElementById("ia-result").style.display="none";
-  document.getElementById("leadStatus").style.display="none";
+  const iaR=document.getElementById("ia-result"); if(iaR) iaR.style.display="none";
+  const ls=document.getElementById("leadStatus"); if(ls) ls.style.display="none";
   todosSelecionados=false; calcular(); nextEtapa(1);
 }
+
 function selecionarTodos(){
   todosSelecionados=!todosSelecionados;
   document.querySelectorAll(".modulo").forEach(m=>m.checked=todosSelecionados);
@@ -48,7 +83,9 @@ function selecionarTodos(){
   if(btn) btn.innerHTML=todosSelecionados?'<i class="fa-solid fa-xmark"></i> Desmarcar Todos':'<i class="fa-solid fa-layer-group"></i> Selecionar Todos - <span>Plano completo no máx R$ 487/mês</span>';
   calcular(); salvarLeadParcial();
 }
+
 function normalizar(s){ return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim(); }
+
 const MODULOS_INTELIGENTE = [
   {nome:"Clientes e CRM", termos:["cliente","paciente","aluno","contato","crm","cadastro","ficha","caderno","planilha","perco cliente"]},
   {nome:"Estoque e Produtos", termos:["estoque","produto","peca","mercadoria","inventario","insumo","sabor"]},
@@ -64,6 +101,7 @@ const MODULOS_INTELIGENTE = [
   {nome:"Fidelidade Cashback", termos:["fidelidade","cashback","pontos","fidelizar"]},
   {nome:"Catalogo Online", termos:["catalogo","site","vitrine","mostrar produto","loja virtual"]},
 ];
+
 function interpretarIA(){
   const raw=document.getElementById("descricao").value;
   const r=document.getElementById("ia-result");
@@ -80,6 +118,7 @@ function interpretarIA(){
   r.style.display="block"; r.innerHTML=`<strong>IA detectou ${detectados.length} módulos:</strong><br>• ${detectados.join("<br>• ")}`;
   calcular(); salvarLeadParcial();
 }
+
 function calcular(){
   let total=160,mods=[];
   document.querySelectorAll(".modulo").forEach(m=>{ if(m.checked){ let preco=getPrecoModulo(m.dataset.nome); total+=preco; mods.push({nome:m.dataset.nome,valor:preco}); } });
@@ -90,17 +129,19 @@ function calcular(){
   let anualCartao = Math.round(anualDe * 0.8);
   let anualPix = Math.round(anualCartao * 0.9);
   let parcelaAnual = (anualCartao/12).toFixed(2).replace('.',',');
+
   document.getElementById("valor").innerText=total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})+"/mês";
-  const elMensal = document.getElementById("mensalValor");
-  const elMensalPix = document.getElementById("mensalPix");
-  const elAnualDe = document.getElementById("anualDe");
-  const elAnualValor = document.getElementById("anualValor");
-  const elAnualPix = document.getElementById("anualPix");
+  const elMensal=document.getElementById("mensalValor");
+  const elMensalPix=document.getElementById("mensalPix");
+  const elAnualDe=document.getElementById("anualDe");
+  const elAnualValor=document.getElementById("anualValor");
+  const elAnualPix=document.getElementById("anualPix");
   if(elMensal) elMensal.innerText=total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})+"/mês";
   if(elMensalPix) elMensalPix.innerText=mensalPix.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})+"/mês";
   if(elAnualDe) elAnualDe.innerText="De "+anualDe.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
   if(elAnualValor) elAnualValor.innerText=anualCartao.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})+" (12x R$ "+parcelaAnual+")";
   if(elAnualPix) elAnualPix.innerText=anualPix.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+
   let prazo=total<=200?"5 a 10 dias":total<=300?"10 a 15 dias":total<=400?"15 a 25 dias":"25 a 40 dias";
   document.getElementById("prazo").innerHTML=`<strong>Prazo:</strong> ${prazo} | <strong>Módulos:</strong> ${mods.length} | Renovação após 12 meses`;
   document.getElementById("projetoNome").innerText=document.getElementById("negocio").value+" - Plano Mensal/Anual";
@@ -112,11 +153,25 @@ function calcular(){
   desenharROI(total,eco);
   window._dadosPlano={total,mensalPix,anualDe,anualCartao,anualPix,parcelaAnual};
 }
+
 function desenharROI(inv,eco){
   const c=document.getElementById("roiChart"); if(!c) return; if(roiChart) roiChart.destroy();
-  const labels=Array.from({length:12},(_,i)=>`Mês ${i+1}`); const ecoAcum=labels.map((_,i)=>eco*(i+1)); const invArr=labels.map(()=>inv);
-  roiChart=new Chart(c.getContext("2d"),{type:"line",data:{labels,datasets:[{label:"Economia Acumulada",data:ecoAcum,borderColor:"#00e5ff",backgroundColor:"rgba(0,229,255,.15)",fill:true,tension:.4,borderWidth:3,pointRadius:4},{label:"Investimento Mensal",data:invArr,borderColor:"#7b61ff",backgroundColor:"rgba(123,97,255,.1)",fill:false,borderDash:[6,4],pointRadius:0}]},options:{responsive:true,animation:false,plugins:{legend:{labels:{color:"#fff",font:{size:11}}}},scales:{y:{ticks:{color:"#888"}},x:{ticks:{color:"#888"}}}}});
+  const labels=Array.from({length:12},(_,i)=>`Mês ${i+1}`);
+  const ecoAcum=labels.map((_,i)=>eco*(i+1));
+  const invArr=labels.map(()=>inv);
+  roiChart=new Chart(c.getContext("2d"),{
+    type:"line",
+    data:{
+      labels,
+      datasets:[
+        {label:"Economia Acumulada",data:ecoAcum,borderColor:"#00e5ff",backgroundColor:"rgba(0,229,255,.15)",tension:.4,fill:true},
+        {label:"Investimento Mensal",data:invArr,borderColor:"#ff3b3b",borderDash:[5,5],tension:.2}
+      ]
+    },
+    options:{responsive:true,plugins:{legend:{labels:{color:"#fff",font:{size:10}}}}}
+  });
 }
+
 const SUPABASE_URL="https://ecrpiuhsbhuqcxbbpqfh.supabase.co";
 const SUPABASE_KEY="sb_publishable_I7Hw7KieW3VNFqb9LYrFoQ_tFWWABwl";
 
@@ -124,26 +179,32 @@ function validarInicial(){
   const n=document.getElementById("leadNomeInicio").value.trim();
   const wRaw=document.getElementById("leadWhatsappInicio").value;
   const wDigits=wRaw.replace(/\D/g,'');
-  if(!n || n.length<2){alert("Preencha seu nome");return false;}
-  if(wDigits.length<10){alert("WhatsApp inválido. Coloque DDD + número");return false;}
+  if(!n || n.length<2){ alert("Preencha seu nome"); return false; }
+  if(wDigits.length<10){ alert("WhatsApp inválido. Coloque DDD + número"); return false; }
   return true;
 }
+
 async function salvarLeadInicial(){
   if(!validarInicial()) return;
-  document.getElementById("leadStatus").style.display="block";
+  const btn=document.querySelector("#etapa1.btn-gerar");
+  if(btn){ btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Salvando...'; btn.disabled=true; }
   await salvarLeadParcial(true);
-  setTimeout(()=>{ nextEtapa(2); }, 400);
+  if(btn){ btn.innerHTML='Continuar <i class="fa-solid fa-arrow-right"></i>'; btn.disabled=false; }
+  const ls=document.getElementById("leadStatus");
+  if(ls){ ls.style.display="block"; ls.innerHTML='<i class="fa-solid fa-check"></i> Lead salvo!'; }
+  setTimeout(()=>{ nextEtapa(2); }, 300);
 }
+
 async function salvarLeadParcial(forcar=false){
   const nome = document.getElementById("leadNomeInicio")?.value?.trim() || "";
   const zapRaw = document.getElementById("leadWhatsappInicio")?.value || "";
   const zapDigits = zapRaw.replace(/\D/g,'');
   if(!forcar && (nome.length<2 || zapDigits.length<10)) return;
+
   const lead={
     data:new Date().toLocaleString("pt-BR"),
     nome: nome || 'Nao informou',
     whatsapp: zapRaw,
-    whatsapp_limpo: zapDigits,
     empresa:document.getElementById("leadEmpresa")?.value||'Nao informou',
     email:document.getElementById("leadEmail")?.value||'Nao informou',
     cidade:document.getElementById("leadCidade")?.value||'Nao informou',
@@ -152,16 +213,34 @@ async function salvarLeadParcial(forcar=false){
     descricao:document.getElementById("descricao")?.value||'Parou no inicio',
     escopo:Array.from(document.querySelectorAll(".modulo:checked")).map(m=>m.dataset.nome).join(", ")||'Base',
     etapa:`Etapa ${etapaAtual}`,
-    plano:document.querySelector('input[name="plano"]:checked')?.value||'mensal',
-    origem:"simulador-etapa-"+etapaAtual
+    plano:document.querySelector('input[name="plano"]:checked')?.value||'mensal'
   };
-  try{ localStorage.setItem("leadParcialDA",JSON.stringify(lead)); localStorage.setItem("leadDA_"+Date.now(), JSON.stringify(lead)); }catch(e){}
-  // salva no supabase com log
+
+  try{ localStorage.setItem("leadParcialDA",JSON.stringify(lead)); }catch(e){}
+
   try{
-    const resp = await fetch(`${SUPABASE_URL}/rest/v1/leads`,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify(lead)});
-    console.log("Lead salvo Supabase", resp.status);
-  }catch(e){ console.error("Erro Supabase", e); }
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/leads`,{
+      method:"POST",
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":`Bearer ${SUPABASE_KEY}`,
+        "Content-Type":"application/json",
+        "Prefer":"return=minimal"
+      },
+      body:JSON.stringify(lead)
+    });
+    console.log("Supabase save:", resp.status);
+    if(!resp.ok){
+      const errText = await resp.text();
+      console.error("Erro Supabase:", errText);
+    }
+    return resp.ok;
+  }catch(e){
+    console.error("Erro ao salvar lead:", e);
+    return false;
+  }
 }
+
 async function gerarPDFBlob(){
   await new Promise(r=>setTimeout(r, 500));
   if(!roiChart){ calcular(); await new Promise(r=>setTimeout(r, 800)); }
@@ -204,9 +283,12 @@ async function gerarPDFBlob(){
   try{ const canvas=document.getElementById("roiChart"); if(canvas){ doc.addImage(canvas.toDataURL("image/png",1.0),'PNG',10,28, W-20, 85); } }catch(e){}
   return doc;
 }
+
 async function enviarWhatsappComPDF(){
   if(!validarInicial()){ nextEtapa(1); return; }
-  calcular(); await salvarLeadParcial(true); desenharROI(valorProjeto, Math.round(valorProjeto*0.85));
+  calcular();
+  await salvarLeadParcial(true);
+  desenharROI(valorProjeto, Math.round(valorProjeto*0.85));
   await new Promise(r=>setTimeout(r, 600));
   const doc=await gerarPDFBlob();
   const nomeInicio = document.getElementById("leadNomeInicio")?.value || "Cliente";
@@ -217,6 +299,7 @@ async function enviarWhatsappComPDF(){
   const msg=`*NOVA SOLICITACAO - DA SOFTWARE (${planoSel.toUpperCase()})*\n--------------------------------\n*Cliente:* ${document.getElementById("leadNomeInicio").value}\n*Empresa:* ${document.getElementById("leadEmpresa").value||'Nao informou'}\n*Cidade:* ${document.getElementById("leadCidade").value||'Nao informou'}\n\n*PLANO:*\nMensal: *${d.total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}/mês* | PIX mensal: *${d.mensalPix.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}/mês*\nAnual Cartão: *${d.anualCartao.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}* (12x R$ ${d.parcelaAnual})\nAnual PIX: *${d.anualPix.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}* (28% OFF)\nRenovação após 12 meses\n\n*MODULOS:*\n${esc||"- Base R$ 160/mês\n"}\n*NECESSIDADE:*\n${document.getElementById("descricao").value||"Quero um sistema sob medida"}\n\n*CONTATOS:*\nWhatsApp: ${document.getElementById("leadWhatsappInicio").value}\nEmail: ${document.getElementById("leadEmail").value||'Nao informou'}`;
   window.open(`https://wa.me/${WHATSAPP_NUM}?text=${encodeURIComponent(msg)}`,"_blank");
 }
+
 let recognition=null, gravando=false; let textoAcumulado="";
 function toggleGravacao(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -232,5 +315,15 @@ function toggleGravacao(){
   recognition.start();
 }
 function pararGravacao(){ gravando=false; const b=document.getElementById("btnAudio"); if(b) b.classList.remove("gravando"); const i=document.getElementById("iconMic"); if(i) i.className="fa-solid fa-microphone"; const s=document.getElementById("audioStatus"); if(s) s.style.display="none"; try{ if(recognition) recognition.stop(); }catch(e){} }
+
 document.addEventListener("change",()=>{ if(etapaAtual>=2) calcular(); salvarLeadParcial(); });
+window.salvarLeadInicial=salvarLeadInicial;
+window.nextEtapa=nextEtapa;
+window.selecionarTodos=selecionarTodos;
+window.interpretarIA=interpretarIA;
+window.calcular=calcular;
+window.enviarWhatsappComPDF=enviarWhatsappComPDF;
+window.toggleGravacao=toggleGravacao;
+window.reiniciarSimulacao=reiniciarSimulacao;
+
 calcular();
