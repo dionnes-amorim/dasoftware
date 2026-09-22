@@ -13,6 +13,10 @@ function aplicarTema(t){ document.documentElement.setAttribute("data-theme",t); 
 if(themeToggle) themeToggle.addEventListener("click",()=>{ const a=document.documentElement.getAttribute("data-theme")||"dark"; aplicarTema(a==="light"?"dark":"light"); });
 aplicarTema(localStorage.getItem("theme")||"dark");
 
+// LIGHTBOX
+function abrirImg(src){ const m=document.getElementById("img-modal"); const i=document.getElementById("img-modal-src"); i.src=src; m.classList.add("show"); document.body.style.overflow="hidden"; }
+function fecharImg(){ const m=document.getElementById("img-modal"); m.classList.remove("show"); document.body.style.overflow=""; }
+
 function nextEtapa(n){
   document.querySelectorAll(".etapa").forEach(e=>e.classList.remove("active"));
   document.getElementById("etapa"+n).classList.add("active");
@@ -34,6 +38,7 @@ function reiniciarSimulacao(){
   if(elNomeInicio) elNomeInicio.value="";
   if(elZapInicio) elZapInicio.value="";
   document.getElementById("ia-result").style.display="none";
+  document.getElementById("leadStatus").style.display="none";
   todosSelecionados=false; calcular(); nextEtapa(1);
 }
 function selecionarTodos(){
@@ -41,7 +46,7 @@ function selecionarTodos(){
   document.querySelectorAll(".modulo").forEach(m=>m.checked=todosSelecionados);
   const btn=document.querySelector(".btn-selecionar-todos");
   if(btn) btn.innerHTML=todosSelecionados?'<i class="fa-solid fa-xmark"></i> Desmarcar Todos':'<i class="fa-solid fa-layer-group"></i> Selecionar Todos - <span>Plano completo no máx R$ 487/mês</span>';
-  calcular();
+  calcular(); salvarLeadParcial();
 }
 function normalizar(s){ return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim(); }
 const MODULOS_INTELIGENTE = [
@@ -73,7 +78,7 @@ function interpretarIA(){
   document.querySelectorAll(".modulo").forEach(c=>c.checked=false);
   document.querySelectorAll(".modulo").forEach(c=>{ if(detectados.includes(c.dataset.nome)) c.checked=true; });
   r.style.display="block"; r.innerHTML=`<strong>IA detectou ${detectados.length} módulos:</strong><br>• ${detectados.join("<br>• ")}`;
-  calcular();
+  calcular(); salvarLeadParcial();
 }
 function calcular(){
   let total=160,mods=[];
@@ -85,7 +90,6 @@ function calcular(){
   let anualCartao = Math.round(anualDe * 0.8);
   let anualPix = Math.round(anualCartao * 0.9);
   let parcelaAnual = (anualCartao/12).toFixed(2).replace('.',',');
-
   document.getElementById("valor").innerText=total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})+"/mês";
   const elMensal = document.getElementById("mensalValor");
   const elMensalPix = document.getElementById("mensalPix");
@@ -97,7 +101,6 @@ function calcular(){
   if(elAnualDe) elAnualDe.innerText="De "+anualDe.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
   if(elAnualValor) elAnualValor.innerText=anualCartao.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})+" (12x R$ "+parcelaAnual+")";
   if(elAnualPix) elAnualPix.innerText=anualPix.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-
   let prazo=total<=200?"5 a 10 dias":total<=300?"10 a 15 dias":total<=400?"15 a 25 dias":"25 a 40 dias";
   document.getElementById("prazo").innerHTML=`<strong>Prazo:</strong> ${prazo} | <strong>Módulos:</strong> ${mods.length} | Renovação após 12 meses`;
   document.getElementById("projetoNome").innerText=document.getElementById("negocio").value+" - Plano Mensal/Anual";
@@ -117,15 +120,47 @@ function desenharROI(inv,eco){
 const SUPABASE_URL="https://ecrpiuhsbhuqcxbbpqfh.supabase.co";
 const SUPABASE_KEY="sb_publishable_I7Hw7KieW3VNFqb9LYrFoQ_tFWWABwl";
 
-function validarInicial(){ const n=document.getElementById("leadNomeInicio").value.trim(),w=document.getElementById("leadWhatsappInicio").value.trim(); if(!n||w.length<10){alert("Preencha Nome e WhatsApp com DDD");return false;} return true; }
-function salvarLeadInicial(){ if(!validarInicial()) return; salvarLeadParcial(true); nextEtapa(2); }
-function salvarLeadParcial(forcar=false){
-  const nome = document.getElementById("leadNomeInicio")?.value || "";
-  const zap = document.getElementById("leadWhatsappInicio")?.value || "";
-  if(!forcar && (nome.length<2 || zap.length<10)) return;
-  const lead={data:new Date().toLocaleString("pt-BR"),nome: nome || 'Nao informou',whatsapp: zap,empresa:document.getElementById("leadEmpresa")?.value||'Nao informou',email:document.getElementById("leadEmail")?.value||'Nao informou',cidade:document.getElementById("leadCidade")?.value||'Nao informou',negocio:document.getElementById("negocio")?.value||'Nao selecionou',valor:document.getElementById("valor")?.innerText||'R$ 160/mês',descricao:document.getElementById("descricao")?.value||'Parou no inicio',escopo:Array.from(document.querySelectorAll(".modulo:checked")).map(m=>m.dataset.nome).join(", ")||'Base',etapa:`Etapa ${etapaAtual}`,plano:document.querySelector('input[name="plano"]:checked')?.value||'mensal'};
-  try{ localStorage.setItem("leadParcialDA",JSON.stringify(lead)); }catch(e){}
-  try{ fetch(`${SUPABASE_URL}/rest/v1/leads`,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify(lead)}); }catch(e){}
+function validarInicial(){
+  const n=document.getElementById("leadNomeInicio").value.trim();
+  const wRaw=document.getElementById("leadWhatsappInicio").value;
+  const wDigits=wRaw.replace(/\D/g,'');
+  if(!n || n.length<2){alert("Preencha seu nome");return false;}
+  if(wDigits.length<10){alert("WhatsApp inválido. Coloque DDD + número");return false;}
+  return true;
+}
+async function salvarLeadInicial(){
+  if(!validarInicial()) return;
+  document.getElementById("leadStatus").style.display="block";
+  await salvarLeadParcial(true);
+  setTimeout(()=>{ nextEtapa(2); }, 400);
+}
+async function salvarLeadParcial(forcar=false){
+  const nome = document.getElementById("leadNomeInicio")?.value?.trim() || "";
+  const zapRaw = document.getElementById("leadWhatsappInicio")?.value || "";
+  const zapDigits = zapRaw.replace(/\D/g,'');
+  if(!forcar && (nome.length<2 || zapDigits.length<10)) return;
+  const lead={
+    data:new Date().toLocaleString("pt-BR"),
+    nome: nome || 'Nao informou',
+    whatsapp: zapRaw,
+    whatsapp_limpo: zapDigits,
+    empresa:document.getElementById("leadEmpresa")?.value||'Nao informou',
+    email:document.getElementById("leadEmail")?.value||'Nao informou',
+    cidade:document.getElementById("leadCidade")?.value||'Nao informou',
+    negocio:document.getElementById("negocio")?.value||'Nao selecionou',
+    valor:document.getElementById("valor")?.innerText||'R$ 160/mês',
+    descricao:document.getElementById("descricao")?.value||'Parou no inicio',
+    escopo:Array.from(document.querySelectorAll(".modulo:checked")).map(m=>m.dataset.nome).join(", ")||'Base',
+    etapa:`Etapa ${etapaAtual}`,
+    plano:document.querySelector('input[name="plano"]:checked')?.value||'mensal',
+    origem:"simulador-etapa-"+etapaAtual
+  };
+  try{ localStorage.setItem("leadParcialDA",JSON.stringify(lead)); localStorage.setItem("leadDA_"+Date.now(), JSON.stringify(lead)); }catch(e){}
+  // salva no supabase com log
+  try{
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/leads`,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify(lead)});
+    console.log("Lead salvo Supabase", resp.status);
+  }catch(e){ console.error("Erro Supabase", e); }
 }
 async function gerarPDFBlob(){
   await new Promise(r=>setTimeout(r, 500));
@@ -171,7 +206,7 @@ async function gerarPDFBlob(){
 }
 async function enviarWhatsappComPDF(){
   if(!validarInicial()){ nextEtapa(1); return; }
-  calcular(); salvarLeadParcial(true); desenharROI(valorProjeto, Math.round(valorProjeto*0.85));
+  calcular(); await salvarLeadParcial(true); desenharROI(valorProjeto, Math.round(valorProjeto*0.85));
   await new Promise(r=>setTimeout(r, 600));
   const doc=await gerarPDFBlob();
   const nomeInicio = document.getElementById("leadNomeInicio")?.value || "Cliente";
