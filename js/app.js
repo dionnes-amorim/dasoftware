@@ -13,7 +13,6 @@ const TABELA_PRECOS = {
   "Comissoes":8,"Contratos":8,"Chat Interno":8,"Assinatura Digital":10,"Fidelidade Cashback":10,
   "Catalogo Online":10,"Backup Automatico":8
 };
-
 function getPrecoModulo(nome){ return TABELA_PRECOS[nome]!==undefined? TABELA_PRECOS[nome]:10; }
 
 function carregarLogoPDF(){
@@ -37,7 +36,6 @@ if(themeToggle) themeToggle.addEventListener("click",()=>{
 });
 aplicarTema(localStorage.getItem("theme")||"dark");
 
-// LIGHTBOX
 function abrirImg(src){
   const m=document.getElementById("img-modal");
   const i=document.getElementById("img-modal-src");
@@ -56,7 +54,7 @@ function nextEtapa(n){
   etapaAtual=n;
   document.getElementById("progress").style.width=(n*25)+"%";
   window.scrollTo({top:document.getElementById("simulador").offsetTop-80,behavior:"smooth"});
-  salvarLeadParcial();
+  if(n>1) salvarLeadParcial();
 }
 
 function reiniciarSimulacao(){
@@ -85,7 +83,6 @@ function selecionarTodos(){
 }
 
 function normalizar(s){ return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim(); }
-
 const MODULOS_INTELIGENTE = [
   {nome:"Clientes e CRM", termos:["cliente","paciente","aluno","contato","crm","cadastro","ficha","caderno","planilha","perco cliente"]},
   {nome:"Estoque e Produtos", termos:["estoque","produto","peca","mercadoria","inventario","insumo","sabor"]},
@@ -172,8 +169,16 @@ function desenharROI(inv,eco){
   });
 }
 
+// ============ CORREÇÃO AQUI ============
 const SUPABASE_URL="https://ecrpiuhsbhuqcxbbpqfh.supabase.co";
 const SUPABASE_KEY="sb_publishable_I7Hw7KieW3VNFqb9LYrFoQ_tFWWABwl";
+let sbClient=null;
+async function getSupabase(){
+  if(sbClient) return sbClient;
+  const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+  sbClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+  return sbClient;
+}
 
 function validarInicial(){
   const n=document.getElementById("leadNomeInicio").value.trim();
@@ -186,20 +191,26 @@ function validarInicial(){
 
 async function salvarLeadInicial(){
   if(!validarInicial()) return;
-  const btn=document.querySelector("#etapa1.btn-gerar");
+  const btn=document.getElementById("btnContinuar1");
   if(btn){ btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Salvando...'; btn.disabled=true; }
-  await salvarLeadParcial(true);
+
+  const ok = await salvarLeadParcial(true);
+
   if(btn){ btn.innerHTML='Continuar <i class="fa-solid fa-arrow-right"></i>'; btn.disabled=false; }
-  const ls=document.getElementById("leadStatus");
-  if(ls){ ls.style.display="block"; ls.innerHTML='<i class="fa-solid fa-check"></i> Lead salvo!'; }
-  setTimeout(()=>{ nextEtapa(2); }, 300);
+  if(ok){
+    const ls=document.getElementById("leadStatus");
+    if(ls){ ls.style.display="block"; ls.innerHTML='<i class="fa-solid fa-check"></i> Lead salvo! Indo...'; }
+    setTimeout(()=>{ nextEtapa(2); }, 400);
+  } else {
+    alert("Erro ao salvar no Supabase - Roda o SQL que te mandei pra zerar a tabela!");
+  }
 }
 
 async function salvarLeadParcial(forcar=false){
   const nome = document.getElementById("leadNomeInicio")?.value?.trim() || "";
   const zapRaw = document.getElementById("leadWhatsappInicio")?.value || "";
   const zapDigits = zapRaw.replace(/\D/g,'');
-  if(!forcar && (nome.length<2 || zapDigits.length<10)) return;
+  if(!forcar && (nome.length<2 || zapDigits.length<10)) return false;
 
   const lead={
     data:new Date().toLocaleString("pt-BR"),
@@ -213,28 +224,21 @@ async function salvarLeadParcial(forcar=false){
     descricao:document.getElementById("descricao")?.value||'Parou no inicio',
     escopo:Array.from(document.querySelectorAll(".modulo:checked")).map(m=>m.dataset.nome).join(", ")||'Base',
     etapa:`Etapa ${etapaAtual}`,
-    plano:document.querySelector('input[name="plano"]:checked')?.value||'mensal'
+    plano:document.querySelector('input[name="plano"]:checked')?.value||'mensal',
+    status: 'Interesse'
   };
 
   try{ localStorage.setItem("leadParcialDA",JSON.stringify(lead)); }catch(e){}
 
   try{
-    const resp = await fetch(`${SUPABASE_URL}/rest/v1/leads`,{
-      method:"POST",
-      headers:{
-        "apikey":SUPABASE_KEY,
-        "Authorization":`Bearer ${SUPABASE_KEY}`,
-        "Content-Type":"application/json",
-        "Prefer":"return=minimal"
-      },
-      body:JSON.stringify(lead)
-    });
-    console.log("Supabase save:", resp.status);
-    if(!resp.ok){
-      const errText = await resp.text();
-      console.error("Erro Supabase:", errText);
+    const sb = await getSupabase();
+    const { data, error } = await sb.from('leads').insert([lead]).select();
+    if(error){
+      console.error("Erro Supabase:", error);
+      return false;
     }
-    return resp.ok;
+    console.log("✅ Lead salvo:", data);
+    return true;
   }catch(e){
     console.error("Erro ao salvar lead:", e);
     return false;
@@ -287,7 +291,8 @@ async function gerarPDFBlob(){
 async function enviarWhatsappComPDF(){
   if(!validarInicial()){ nextEtapa(1); return; }
   calcular();
-  await salvarLeadParcial(true);
+  const ok = await salvarLeadParcial(true);
+  if(!ok){ alert("Não salvou no Supabase, mas vou abrir o WhatsApp"); }
   desenharROI(valorProjeto, Math.round(valorProjeto*0.85));
   await new Promise(r=>setTimeout(r, 600));
   const doc=await gerarPDFBlob();
