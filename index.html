@@ -36,19 +36,19 @@
 </nav>
 <header class="hero">
 <div class="hero-content" data-aos="fade-up" data-aos-duration="1000">
-<span class="tag" data-aos="zoom-in"><i class="fa-solid fa-rocket"></i> Saia de planilhas no Excel, venha montar seu próprio programa conosco</span>
+<span class="tag" data-aos="zoom-in"><i class="fa-solid fa-rocket"></i> MONTE SEU SISTEMA COM A GENTE E SAIA DE CADERNOS E PLANILHAS DE EXCEL</span>
 <h1 data-aos="fade-up" data-aos-delay="200">Seu sistema sob medida <span class="gradient">a partir de R$ 160/mês</span></h1>
-<p data-aos="fade-up" data-aos-delay="400">Descreva sua ideia e o nosso sistema montará o escopo automaticamente, calculando prazos, ganhos/perdas e economia mensal. Mensal ou anual com desconto.</p>
+<p data-aos="fade-up" data-aos-delay="400">Descreva como é o seu negócio e o nosso sistema montará o escopo automaticamente, calculando prazos, ganhos/perdas e economia mensal. Além de montarmos o seu sistema ad forma que você preferir.</p>
 <div class="hero-btns" data-aos="fade-up" data-aos-delay="600"><a href="#simulador" class="cta"><i class="fa-solid fa-wand-magic-sparkles"></i> Simular meu projeto agora</a></div>
 </div>
 </header>
 <section class="como-funciona" data-aos="fade-up">
-<h2>Como funciona</h2>
+<h2>Como Funciona</h2>
 <p class="comp-sub">Simule em menos de 2 minutos</p>
 <div class="passos">
-<div class="passo"><span>01</span><h3>Seu Contato</h3><p>Salvamos seu WhatsApp pra não perder sua simulação se você sair.</p></div>
-<div class="passo"><span>02</span><h3>IA Analisa</h3><p>Detectamos só os módulos que você realmente precisa. Você também poderá marcar manualmente.</p></div>
-<div class="passo"><span>03</span><h3>Receba a Proposta</h3><p>Valor mensal, anual com desconto, prazo e PDF completo.</p></div>
+<div class="passo"><span>01</span><h3>Seu Segmento</h3><p>Descreva como é a sua empresa/negócio e o que você precisa.</p></div>
+<div class="passo"><span>02</span><h3>IA Analisa</h3><p>Detectamos só os módulos que você realmente irá precisar. Você também poderá marcar manualmente.</p></div>
+<div class="passo"><span>03</span><h3>Receba a Proposta</h3><p>Receba a proposta com os valores e módulos que você irá precisar. Logo depois, vamos combinar o melhor valor para o seu bolso.</p></div>
 </div>
 </section>
 <section class="segmentos">
@@ -75,7 +75,7 @@
 
 <section class="exemplos" data-aos="fade-up">
 <h2>Veja como fica <span class="gradient">na prática</span></h2>
-<p class="comp-sub">10 exemplos reais dos sistemas que mais vendem - clique para ampliar</p>
+<p class="comp-sub">Exemplos reais dos sistemas que mais vendem - Clique para ampliar e ver como faremos:</p>
 <div class="exemplos-grid">
 <div class="exemplo-card" data-aos="zoom-in" onclick="abrirImg('./assets/exemplos/sorveteria.webp')"><img src="./assets/exemplos/sorveteria.webp" alt="Sistema Sorveteria"><div class="exemplo-info"><h4>🍦 Sorveteria</h4><p>PDV, sabores por litro, fidelidade e estoque</p></div></div>
 <div class="exemplo-card" data-aos="zoom-in" data-aos-delay="100" onclick="abrirImg('./assets/exemplos/farmacia.webp')"><img src="./assets/exemplos/farmacia.webp" alt="Sistema Farmacia"><div class="exemplo-info"><h4>💊 Farmácia</h4><p>Lote, validade, receita e NFe automática</p></div></div>
@@ -105,13 +105,13 @@
 <div class="progress-bar"><div id="progress" class="progress-fill" style="width:25%"></div></div>
 <div class="form-area" data-aos="fade-up">
 <div class="etapa active" id="etapa1">
-<h3><span>01</span> Seu contato (pra salvar sua simulação)</h3>
-<p style="opacity:.6;font-size:13px;margin-bottom:16px">Se fechar a página, já te chamo no WhatsApp com sua proposta salva.</p>
+<h3><span>01</span> Seu contato</h3>
+<p style="opacity:.6;font-size:13px;margin-bottom:16px">Preencha para lembramos quem é você. Dessa forma, podemos combinado o melhor que você irá precisar.</p>
 <div class="grid-2">
 <div class="form-group"><label>Seu nome *</label><input type="text" id="leadNomeInicio" placeholder="Ex: João da Silva"></div>
 <div class="form-group"><label>Seu WhatsApp *</label><input type="tel" id="leadWhatsappInicio" placeholder="(17) 99999-9999"></div>
 </div>
-<p id="leadStatus" style="display:none;margin-top:8px;font-size:12px;color:#00ff88"><i class="fa-solid fa-check"></i> Lead salvo! Pode continuar.</p>
+<p id="leadStatus" style="display:none;margin-top:8px;font-size:12px;color:#00ff88"><i class="fa-solid fa-check"></i>Contato preenchido!.</p>
 <button class="btn-gerar" onclick="salvarLeadInicial()">Continuar <i class="fa-solid fa-arrow-right"></i></button>
 </div>
 <div class="etapa" id="etapa2">
@@ -124,7 +124,7 @@
 <label><i class="fa-solid fa-brain"></i> O que seu sistema precisa fazer?
 <button type="button" id="btnAudio" onclick="toggleGravacao()" style="float:right; background: linear-gradient(135deg,#00e5ff,#7b61ff); border:none; width:32px; height:32px; border-radius:50%; color:#fff; cursor:pointer;"><i class="fa-solid fa-microphone" id="iconMic"></i></button>
 </label>
-<textarea id="descricao" placeholder="EX: Tenho uma sorveteria e perco controle dos sabores..."></textarea>
+<textarea id="descricao" placeholder="EX: Tenho uma sorveteria e perco controle dos sabores disponíveis, dos clients e do estoque que temos. Preciso marcar os pedidos, ordem de entrega, responder clientes no whatsapp, etc..."></textarea>
 <div id="audioStatus" style="display:none; color:#00e5ff; font-size:12px; margin-top:6px; font-weight:600;"><i class="fa-solid fa-circle" style="color:red;"></i> Ouvindo... pode falar</div>
 <button class="btn-ia" onclick="interpretarIA()"><i class="fa-solid fa-wand-magic-sparkles"></i> Detectar Módulos Automaticamente</button>
 <div id="ia-result" class="ia-result"></div>
@@ -132,8 +132,8 @@
 <div class="nav-etapas"><button class="btn-voltar" onclick="nextEtapa(1)">Voltar</button><button class="btn-gerar" onclick="nextEtapa(3)">Próximo <i class="fa-solid fa-arrow-right"></i></button></div>
 </div>
 <div class="etapa" id="etapa3">
-<h3><span>03</span> Módulos (valor mensal)</h3>
-<button class="btn-selecionar-todos" onclick="selecionarTodos()"><i class="fa-solid fa-layer-group"></i> Selecionar Todos - <span>Plano completo no máx R$ 487/mês</span></button>
+<h3><span>03</span> Módulos (Adiciona no valor da mensalidade)</h3>
+<button class="btn-selecionar-todos" onclick="selecionarTodos()"><i class="fa-solid fa-layer-group"></i> Selecionar Todos - <span>Plano completo, porém valor e tempo para terminar o projeto será maior.</span></button>
 <div class="checks">
 <label class="check"><input type="checkbox" class="modulo" data-nome="Clientes e CRM"> <i class="fa-solid fa-users"></i> Clientes CRM <span class="price">+R$ 15/mês</span></label>
 <label class="check"><input type="checkbox" class="modulo" data-nome="Estoque e Produtos"> <i class="fa-solid fa-boxes-stacked"></i> Estoque <span class="price">+R$ 15/mês</span></label>
@@ -198,13 +198,13 @@
 <section class="faq" data-aos="fade-up">
 <h2>Dúvidas Frequentes</h2>
 <div class="faq-grid">
-<div class="faq-item"><h4>O valor a partir de R$ 160/mês inclui tudo?</h4><p>Não. R$ 160/mês é a base. Cada módulo soma mensal. Máximo com tudo R$ 487/mês.</p></div>
-<div class="faq-item"><h4>Tem plano anual?</h4><p>Sim! Anual com 20% OFF no cartão e 28% OFF no PIX. Renovação após 12 meses mantendo desconto.</p></div>
-<div class="faq-item"><h4>Como funciona o prazo?</h4><p>Estimado conforme escopo. Projetos maiores levam mais tempo.</p></div>
+<div class="faq-item"><h4>O valor a partir de R$ 160/mês inclui tudo?</h4><p>Não. R$ 160/mês é a base. Cada módulo soma mensal, porém o sistema será mais completo e com maiores funcionalidades.</p></div>
+<div class="faq-item"><h4>Tem plano anual?</h4><p>Sim! Anual com 20% OFF no cartão e 28% OFF no PIX. Renovação após 12 meses mantendo o desconto em cima do valor que combinarmos.</p></div>
+<div class="faq-item"><h4>Como funciona o prazo?</h4><p>Estimado conforme a necessidade do cliente. Projetos maiores levam mais tempo.</p></div>
 <div class="faq-item"><h4>Funciona no celular?</h4><p>Sim, PC e celular. Se marcar App Android/iOS, desenvolvemos o app.</p></div>
 </div>
 </section>
-<footer>© 2026 DA Software - Simulador de Propostas</footer>
+<footer>© 2026 DA Software - Monte seu sistema sob medida</footer>
 
 <div id="img-modal" onclick="if(event.target.id==='img-modal'||event.target.id==='img-modal-close')fecharImg()"><button id="img-modal-close" class="close-img" onclick="fecharImg()"><i class="fa-solid fa-xmark"></i></button><img id="img-modal-src" src=""></div>
 
