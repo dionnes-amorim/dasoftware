@@ -5,67 +5,15 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
 const WHATSAPP_NUM="5517997474065";
 let valorProjeto=160, etapaAtual=1, roiChart=null, logoBase64=null, todosSelecionados=false;
+
+// UNICO - SEM DUPLICAR
 let salvando = false;
-let salvando = false;
-let leadIdAtual = null; // NUNCA mais pega do localStorage
+let leadIdAtual = null;
 let timeoutSalvar = null;
 
-// LIMPA QUALQUER ID ANTIGO AO RECARREGAR - assim sempre cria nova
+// SEMPRE NOVA LEAD AO RECARREGAR
 localStorage.removeItem("leadIdAtual");
 sessionStorage.removeItem("leadIdAtual");
-
-async function salvarLeadParcial(forcar=false){
-  const nomeEl = document.getElementById("leadNomeInicio");
-  const zapEl = document.getElementById("leadWhatsappInicio");
-  const nome = nomeEl?.value?.trim() || "";
-  const zapRaw = zapEl?.value || "";
-  const zapDigits = zapRaw.replace(/\D/g,'');
-
-  if(!forcar && (nome.length<2 || zapDigits.length<10)) return false;
-  if(salvando) return false;
-  salvando = true;
-
-  const lead={
-    data:new Date().toLocaleString("pt-BR"),
-    nome: nome || 'Nao informou',
-    whatsapp: zapRaw,
-    empresa:document.getElementById("leadEmpresa")?.value||'Nao informou',
-    email:document.getElementById("leadEmail")?.value||'Nao informou',
-    cidade:document.getElementById("leadCidade")?.value||'Nao informou',
-    negocio:document.getElementById("negocio")?.value||'Nao selecionou',
-    valor:document.getElementById("valor")?.innerText||'R$ 160/mês',
-    descricao:document.getElementById("descricao")?.value||'Parou no inicio',
-    escopo:Array.from(document.querySelectorAll(".modulo:checked")).map(m=>m.dataset.nome).join(", ")||'Base',
-    etapa:`Etapa ${etapaAtual}`,
-    plano:document.querySelector('input[name="plano"]:checked')?.value||'mensal',
-    status: 'Interesse'
-  };
-
-  try{
-    const sb = await getSupabase();
-    let result;
-
-    if(leadIdAtual){
-      // atualiza a mesma lead ENQUANTO não recarregar
-      result = await sb.from('leads').update(lead).eq('id', leadIdAtual).select();
-    } else {
-      // cria NOVA a cada reload
-      result = await sb.from('leads').insert([lead]).select();
-      if(result.data && result.data[0]){
-        leadIdAtual = result.data[0].id;
-        // guarda só na memória da sessão, não no localStorage
-        sessionStorage.setItem("leadIdAtual", leadIdAtual);
-      }
-    }
-    salvando = false;
-    return true;
-  }catch(e){
-    console.error("ERRO:", e);
-    salvando = false;
-    return false;
-  }
-}
-let timeoutSalvar = null;
 
 const TABELA_PRECOS = {
   "Clientes e CRM":15,"Estoque e Produtos":15,"Financeiro Completo":20,"Caixa PDV":15,
@@ -119,8 +67,9 @@ function nextEtapa(n){
 }
 
 function reiniciarSimulacao(){
-  localStorage.removeItem("leadIdAtual");
   leadIdAtual = null;
+  localStorage.removeItem("leadIdAtual");
+  sessionStorage.removeItem("leadIdAtual");
   document.querySelectorAll(".modulo").forEach(m=>m.checked=false);
   document.getElementById("descricao").value="";
   document.getElementById("negocio").selectedIndex=0;
@@ -255,27 +204,16 @@ function validarInicial(){
   return true;
 }
 
-async function salvarLeadInicial(){
-  if(!validarInicial()) return;
-  if(salvando) return;
-  const btn=document.getElementById("btnContinuar1");
-  if(btn){ btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Salvando...'; btn.disabled=true; }
-  const ok = await salvarLeadParcial(true);
-  if(btn){ btn.innerHTML='Continuar <i class="fa-solid fa-arrow-right"></i>'; btn.disabled=false; }
-  if(ok){
-    const ls=document.getElementById("leadStatus");
-    if(ls){ ls.style.display="block"; ls.innerHTML='<i class="fa-solid fa-check"></i> Lead salvo!'; }
-    setTimeout(()=>{ nextEtapa(2); }, 400);
-  }
-}
-
+// UNICA FUNCAO DE SALVAR - CORRIGIDA PARA F5 CRIAR NOVA LEAD
 async function salvarLeadParcial(forcar=false){
-  if(salvando) return false;
-  const nome = document.getElementById("leadNomeInicio")?.value?.trim() || "";
-  const zapRaw = document.getElementById("leadWhatsappInicio")?.value || "";
+  const nomeEl = document.getElementById("leadNomeInicio");
+  const zapEl = document.getElementById("leadWhatsappInicio");
+  const nome = nomeEl?.value?.trim() || "";
+  const zapRaw = zapEl?.value || "";
   const zapDigits = zapRaw.replace(/\D/g,'');
-  if(!forcar && (nome.length<2 || zapDigits.length<10)) return false;
 
+  if(!forcar && (nome.length<2 || zapDigits.length<10)) return false;
+  if(salvando) return false;
   salvando = true;
 
   const lead={
@@ -294,22 +232,17 @@ async function salvarLeadParcial(forcar=false){
     status: 'Interesse'
   };
 
-  try{ localStorage.setItem("leadParcialDA",JSON.stringify(lead)); }catch(e){}
-
   try{
     const sb = await getSupabase();
     let result;
     if(leadIdAtual){
-      // ATUALIZA o mesmo lead
       result = await sb.from('leads').update(lead).eq('id', leadIdAtual).select();
-      console.log("♻️ Lead ATUALIZADO:", leadIdAtual);
+      console.log("♻️ ATUALIZADO:", leadIdAtual);
     } else {
-      // CRIA primeira vez
       result = await sb.from('leads').insert([lead]).select();
       if(result.data && result.data[0]){
         leadIdAtual = result.data[0].id;
-        localStorage.setItem("leadIdAtual", leadIdAtual);
-        console.log("✅ Lead CRIADO:", leadIdAtual);
+        console.log("✅ CRIADO NOVA LEAD:", leadIdAtual);
       }
     }
     if(result.error) throw result.error;
@@ -319,6 +252,20 @@ async function salvarLeadParcial(forcar=false){
     console.error("Erro Supabase:", e);
     salvando = false;
     return false;
+  }
+}
+
+async function salvarLeadInicial(){
+  if(!validarInicial()) return;
+  if(salvando) return;
+  const btn=document.getElementById("btnContinuar1");
+  if(btn){ btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Salvando...'; btn.disabled=true; }
+  const ok = await salvarLeadParcial(true);
+  if(btn){ btn.innerHTML='Continuar <i class="fa-solid fa-arrow-right"></i>'; btn.disabled=false; }
+  if(ok){
+    const ls=document.getElementById("leadStatus");
+    if(ls){ ls.style.display="block"; ls.innerHTML='<i class="fa-solid fa-check"></i> Lead salvo!'; }
+    setTimeout(()=>{ nextEtapa(2); }, 400);
   }
 }
 
@@ -397,7 +344,6 @@ function toggleGravacao(){
 }
 function pararGravacao(){ gravando=false; const b=document.getElementById("btnAudio"); if(b) b.classList.remove("gravando"); const i=document.getElementById("iconMic"); if(i) i.className="fa-solid fa-microphone"; const s=document.getElementById("audioStatus"); if(s) s.style.display="none"; try{ if(recognition) recognition.stop(); }catch(e){} }
 
-// CORRIGIDO - NÃO TRIPLICA MAIS
 document.addEventListener("change",()=>{
   if(etapaAtual>=2) calcular();
   clearTimeout(timeoutSalvar);
@@ -405,6 +351,7 @@ document.addEventListener("change",()=>{
 });
 
 window.salvarLeadInicial=salvarLeadInicial;
+window.salvarLeadParcial=salvarLeadParcial;
 window.nextEtapa=nextEtapa;
 window.selecionarTodos=selecionarTodos;
 window.interpretarIA=interpretarIA;
