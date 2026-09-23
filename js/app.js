@@ -6,7 +6,65 @@ document.addEventListener("DOMContentLoaded", ()=>{
 const WHATSAPP_NUM="5517997474065";
 let valorProjeto=160, etapaAtual=1, roiChart=null, logoBase64=null, todosSelecionados=false;
 let salvando = false;
-let leadIdAtual = localStorage.getItem("leadIdAtual") || null;
+let salvando = false;
+let leadIdAtual = null; // NUNCA mais pega do localStorage
+let timeoutSalvar = null;
+
+// LIMPA QUALQUER ID ANTIGO AO RECARREGAR - assim sempre cria nova
+localStorage.removeItem("leadIdAtual");
+sessionStorage.removeItem("leadIdAtual");
+
+async function salvarLeadParcial(forcar=false){
+  const nomeEl = document.getElementById("leadNomeInicio");
+  const zapEl = document.getElementById("leadWhatsappInicio");
+  const nome = nomeEl?.value?.trim() || "";
+  const zapRaw = zapEl?.value || "";
+  const zapDigits = zapRaw.replace(/\D/g,'');
+
+  if(!forcar && (nome.length<2 || zapDigits.length<10)) return false;
+  if(salvando) return false;
+  salvando = true;
+
+  const lead={
+    data:new Date().toLocaleString("pt-BR"),
+    nome: nome || 'Nao informou',
+    whatsapp: zapRaw,
+    empresa:document.getElementById("leadEmpresa")?.value||'Nao informou',
+    email:document.getElementById("leadEmail")?.value||'Nao informou',
+    cidade:document.getElementById("leadCidade")?.value||'Nao informou',
+    negocio:document.getElementById("negocio")?.value||'Nao selecionou',
+    valor:document.getElementById("valor")?.innerText||'R$ 160/mês',
+    descricao:document.getElementById("descricao")?.value||'Parou no inicio',
+    escopo:Array.from(document.querySelectorAll(".modulo:checked")).map(m=>m.dataset.nome).join(", ")||'Base',
+    etapa:`Etapa ${etapaAtual}`,
+    plano:document.querySelector('input[name="plano"]:checked')?.value||'mensal',
+    status: 'Interesse'
+  };
+
+  try{
+    const sb = await getSupabase();
+    let result;
+
+    if(leadIdAtual){
+      // atualiza a mesma lead ENQUANTO não recarregar
+      result = await sb.from('leads').update(lead).eq('id', leadIdAtual).select();
+    } else {
+      // cria NOVA a cada reload
+      result = await sb.from('leads').insert([lead]).select();
+      if(result.data && result.data[0]){
+        leadIdAtual = result.data[0].id;
+        // guarda só na memória da sessão, não no localStorage
+        sessionStorage.setItem("leadIdAtual", leadIdAtual);
+      }
+    }
+    salvando = false;
+    return true;
+  }catch(e){
+    console.error("ERRO:", e);
+    salvando = false;
+    return false;
+  }
+}
 let timeoutSalvar = null;
 
 const TABELA_PRECOS = {
