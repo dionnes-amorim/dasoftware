@@ -48,7 +48,7 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 </style>
 </head>
 <body>
-<div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Carregando painel...</div>
+<div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Verificando login...</div>
 
 <div class="top">
 <div><h1 style="font-size:18px"><i class="fa-solid fa-table-columns" style="color:#00e5ff"></i> PAINEL GERENCIAL</h1><p style="opacity:.5;font-size:11px">Potencial = Interesse + Execução • Canceladas fora</p></div>
@@ -117,47 +117,16 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL="https://ecrpiuhsbhuqcxbbpqfh.supabase.co";
 const SUPABASE_KEY="sb_publishable_I7Hw7KieW3VNFqb9LYrFoQ_tFWWABwl";
 
-// LOGIN VOLTOU - SEM LOOP
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: {
-    storage: window.localStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: false
-  }
+  auth: { storage: window.localStorage, persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
 });
 
-try {
-  const { data: { session } } = await supabase.auth.getSession();
-  if(!session){
-    // sem sessão = manda pro login
-    location.href='./login.html';
-  } else {
-    document.getElementById('loader').style.display='none';
-  }
-} catch(e){
-  // Se o navegador bloqueou o storage (Tracking Prevention)
-  // não fica em loop, mostra botão
-  console.warn("Storage bloqueado", e);
-  document.getElementById('loader').innerHTML = `
-    <p style="color:#fff;text-align:center">Seu navegador bloqueou o login.<br>
-    <a href="./login.html" style="color:#00e5ff">Clique aqui para logar</a><br>
-    <small style="opacity:.5">Use Chrome sem aba anônima</small></p>`;
-}
-
-window.supabase=supabase;
-window.logout=async()=>{
+window.supabase = supabase;
+window.logout = async () => {
   await supabase.auth.signOut();
   localStorage.clear();
   sessionStorage.clear();
-  location.href='./login.html';
-};
-
-window.supabase=supabase;
-window.logout=async()=>{
-  try{ await supabase.auth.signOut(); }catch(e){}
-  localStorage.clear(); sessionStorage.clear();
-  location.href='./login.html';
+  location.replace('./login.html');
 };
 
 let leads=[], idxAtual=null, dragIdx=null, pendenteCancel=null, chartM=null, chartF=null, chartV=null;
@@ -186,15 +155,12 @@ async function atualizarBanco(l){
 }
 
 window.carregar=async()=>{
-  document.getElementById('loader').style.display='flex';
-  document.getElementById('loader').innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Carregando leads...';
+  const loader=document.getElementById('loader');
+  loader.style.display='flex';
+  loader.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Carregando leads...';
   const {data,error}=await supabase.from('leads').select('*').order('id',{ascending:false});
-  document.getElementById('loader').style.display='none';
-  if(error){
-    console.error(error);
-    alert("Erro ao carregar: "+error.message+" - Verifica se a tabela leads está com RLS liberado para anon");
-    return;
-  }
+  loader.style.display='none';
+  if(error){ alert("Erro: "+error.message); return; }
   leads=data.map(l=>{
     let s=l.status||'Interesse';
     if(['Nova','Em Analise','Aprovada','Finalizada'].includes(s)) s='Interesse';
@@ -211,7 +177,6 @@ window.render=()=>{
   if(filtro==='hoje') f=f.filter(l=> (l.data||'').includes(new Date().toLocaleDateString('pt-BR')));
   if(filtro==='semana') f=f.filter(l=> diasDesde(l.data)<=7);
   if(filtro==='interesse') f=f.filter(l=> l.status==='Interesse');
-
   const potencial = f.filter(l=> l.status==='Interesse' || l.status==='Em Execucao');
   const potencialValor = potencial.reduce((a,l)=>a+parseValor(l.valor),0);
   const lucro = f.filter(l=>l.status==='Entregue').reduce((a,l)=>a+(parseValor(l.valor)-(Number(l.custo)||0)),0);
@@ -220,7 +185,6 @@ window.render=()=>{
   const hoje = leads.filter(l=> (l.data||'').includes(new Date().toLocaleDateString('pt-BR'))).length;
   const conv = f.length? Math.round((f.filter(l=>l.status==='Entregue').length / f.length)*100):0;
   const ticket = f.filter(l=>l.status==='Entregue').length? (f.filter(l=>l.status==='Entregue').reduce((a,l)=>a+parseValor(l.valor),0) / f.filter(l=>l.status==='Entregue').length):0;
-
   document.getElementById('totalLeads').innerText=f.length;
   document.getElementById('totalValor').innerText=potencialValor.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   document.getElementById('totalLucro').innerText=lucro.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -229,7 +193,6 @@ window.render=()=>{
   document.getElementById('statHoje').innerText=hoje+' hoje';
   document.getElementById('statPerdido').innerText=perdido.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})+' perdido';
   document.getElementById('statTicket').innerText='Ticket '+ticket.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-
   const colunas=['Interesse','Em Execucao','Entregue','Canceladas'];
   let html='';
   colunas.forEach(col=>{
@@ -240,41 +203,24 @@ window.render=()=>{
     itens.forEach(l=>{
       const idx=leads.findIndex(x=>x.id===l.id);
       const dias=diasDesde(l.data);
-      html+=`<div class="kanban-card" draggable="true" ondragstart="drag(event,${idx})" ondragend="dragEnd()" onclick="abrir(${idx})"><div style="display:flex;justify-content:space-between"><b style="font-size:13px">${l.nome||'Sem nome'}</b><span class="badge-tempo">${dias===0?'hoje':dias+'d'}</span></div><small style="opacity:.6">${l.empresa||''} ${(l.notas||[]).length? '• 📝'+l.notas.length:''}</small><div style="margin-top:6px;display:flex;justify-content:space-between"><span class="valor">${l.valor||''}</span><span class="tag">${l.negocio||''}</span></div>${l.status==='Canceladas'&&l.motivoPerda?`<div style="margin-top:6px;font-size:10px;background:rgba(239,68,68,.15);padding:4px 8px;border-radius:6px;color:#ff8a8a">${l.motivoPerda}</div>`:''}</div>`;
+      html+=`<div class="kanban-card" draggable="true" ondragstart="drag(event,${idx})" ondragend="dragEnd()" onclick="abrir(${idx})"><div style="display:flex;justify-content:space-between"><b style="font-size:13px">${l.nome||'Sem nome'}</b><span>${dias===0?'hoje':dias+'d'}</span></div><small style="opacity:.6">${l.empresa||''} ${(l.notas||[]).length? '• 📝'+l.notas.length:''}</small><div style="margin-top:6px;display:flex;justify-content:space-between"><span class="valor">${l.valor||''}</span><span class="tag">${l.negocio||''}</span></div>${l.status==='Canceladas'&&l.motivoPerda?`<div style="margin-top:6px;font-size:10px;background:rgba(239,68,68,.15);padding:4px 8px;border-radius:6px;color:#ff8a8a">${l.motivoPerda}</div>`:''}</div>`;
     });
     html+=`</div>`;
   });
   document.getElementById('kanbanBoard').innerHTML=html;
-
   const porCol = colunas.map(c=> f.filter(l=>l.status===c).length);
   const valorPorCol = colunas.map(c=> f.filter(l=>l.status===c).reduce((a,l)=>a+parseValor(l.valor),0));
   const motivosCount={};
   canceladas.forEach(l=>{ const m=(l.motivo_perda||'Sem motivo').split(' - ')[0]; motivosCount[m]=(motivosCount[m]||0)+1; });
-
   const ctxF = document.getElementById('chartFunil');
   if(chartF) chartF.destroy();
-  chartF = new Chart(ctxF, {
-    type: 'bar',
-    data: { labels: ['Interesse','Execução','Entregue','Canceladas'], datasets: [{ label: 'Qtd', data: porCol, backgroundColor: ['#f59e0b','#7c3aed','#10b981','#ef4444'] }] },
-    options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{color:'#fff'}},x:{ticks:{color:'#fff'}}} }
-  });
-
+  chartF = new Chart(ctxF, { type: 'bar', data: { labels: ['Interesse','Execução','Entregue','Canceladas'], datasets: [{ label: 'Qtd', data: porCol, backgroundColor: ['#f59e0b','#7c3aed','#10b981','#ef4444'] }] }, options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{color:'#fff'}},x:{ticks:{color:'#fff'}}} } });
   const ctxV = document.getElementById('chartValor');
   if(chartV) chartV.destroy();
-  chartV = new Chart(ctxV, {
-    type: 'bar',
-    data: { labels: ['Interesse','Execução','Entregue','Canceladas'], datasets: [{ label: 'R$', data: valorPorCol, backgroundColor: ['#f59e0b','#7c3aed','#10b981','#ef4444'] }] },
-    options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{color:'#fff'}},x:{ticks:{color:'#fff'}}} }
-  });
-
+  chartV = new Chart(ctxV, { type: 'bar', data: { labels: ['Interesse','Execução','Entregue','Canceladas'], datasets: [{ label: 'R$', data: valorPorCol, backgroundColor: ['#f59e0b','#7c3aed','#10b981','#ef4444'] }] }, options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{color:'#fff'}},x:{ticks:{color:'#fff'}}} } });
   const ctxM = document.getElementById('chartMotivos');
   if(chartM) chartM.destroy();
-  chartM = new Chart(ctxM, {
-    type: 'doughnut',
-    data: { labels: Object.keys(motivosCount), datasets: [{ data: Object.values(motivosCount), backgroundColor: ['#ef4444','#f59e0b','#7c3aed','#00e5ff','#10b981','#fff'] }] },
-    options: { plugins:{legend:{labels:{color:'#fff',boxWidth:10,font:{size:10}}}} }
-  });
-
+  chartM = new Chart(ctxM, { type: 'doughnut', data: { labels: Object.keys(motivosCount), datasets: [{ data: Object.values(motivosCount), backgroundColor: ['#ef4444','#f59e0b','#7c3aed','#00e5ff','#10b981','#fff'] }] }, options: { plugins:{legend:{labels:{color:'#fff',boxWidth:10,font:{size:10}}}} } });
   document.getElementById('listaMotivos').innerHTML = Object.entries(motivosCount).map(([k,v])=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.06);padding:4px 0"><span>${k}</span><b>${v}</b></div>`).join('') || '<div style="opacity:.4">Sem canceladas</div>';
 }
 
@@ -286,7 +232,6 @@ window.cancelarMotivo=()=>{ document.getElementById('modalMotivo').classList.rem
 window.dropDeletar=async(e)=>{ e.preventDefault(); if(dragIdx===null) return; if(!confirm(`Deletar ${leads[dragIdx].nome}?`)){ dragEnd(); dragIdx=null; return; } const id=leads[dragIdx].id; leads.splice(dragIdx,1); render(); dragEnd(); dragIdx=null; if(id) await supabase.from('leads').delete().eq('id',id); }
 document.getElementById('zonaDeletar').addEventListener('dragover',e=>{e.preventDefault();});
 document.getElementById('zonaDeletar').addEventListener('drop',window.dropDeletar);
-
 window.abrir=(idx)=>{ idxAtual=idx; const l=leads[idx]; document.getElementById('mNome').innerText=l.nome||''; document.getElementById('mSub').innerText=`${l.empresa||''} • ${l.email||''} • ${l.cidade||''} • ${l.data||''}`; document.getElementById('mZap').innerText=l.whatsapp||''; document.getElementById('mZap').href=`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}`; document.getElementById('mValor').innerText=l.valor||''; document.getElementById('mCidade').innerText=l.cidade||''; document.getElementById('mNegocio').innerText=l.negocio||''; document.getElementById('mEscopo').innerText=`${l.escopo||''}\n\n${l.descricao||''}`; document.getElementById('mStatus').value=l.status; document.getElementById('mProx').value=l.prox_contato||''; document.getElementById('mCusto').value=l.custo||''; document.getElementById('mMotivo').value=l.motivo_perda||''; document.getElementById('listaNotas').innerHTML=(l.notas||[]).map(n=>`<div class="note-item"><small>${n.data}</small><br>${n.texto}</div>`).join('')||'<p style="opacity:.4;font-size:11px">Sem notas</p>'; document.getElementById('modalLead').classList.add('show'); }
 window.fechar=()=>{ document.getElementById('modalLead').classList.remove('show'); idxAtual=null; }
 window.trocarStatus=async()=>{ const novo=document.getElementById('mStatus').value; if(novo==='Canceladas' && leads[idxAtual].status!=='Canceladas'){ pendenteCancel=idxAtual; document.getElementById('modalMotivo').classList.add('show'); document.getElementById('mStatus').value=leads[idxAtual].status; return; } await salvar(); }
@@ -296,7 +241,21 @@ window.deletar=async()=>{ if(idxAtual===null||!confirm('Deletar?')) return; cons
 window.enviarMsg=(tipo)=>{ if(idxAtual===null) return; const l=leads[idxAtual]; let msg=tipo==='proposta'?`Olá ${l.nome}! Sua proposta ${l.valor} para ${l.negocio} pronta. PIX com 10% OFF hoje.`:`Olá ${l.nome}! Vi que se interessou por ${l.negocio} por ${l.valor}. Ainda tem interesse?`; window.open(`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank'); }
 window.exportarCSV=()=>{ let csv="Nome,Empresa,WhatsApp,Cidade,Segmento,Valor,Status,Motivo,Data\n"; leads.forEach(l=>{ csv+=`"${l.nome||''}","${l.empresa||''}","${l.whatsapp||''}","${l.cidade||''}","${l.negocio||''}","${l.valor||''}","${l.status||''}","${(l.motivo_perda||'').replace(/"/g,'') }","${l.data||''}"\n`; }); const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='leads.csv'; a.click(); }
 
-carregar();
+// INICIALIZAÇÃO CORRETA - SEM LOOP
+(async()=>{
+  try{
+    const { data: { session } } = await supabase.auth.getSession();
+    if(!session){
+      location.replace('./login.html');
+      return;
+    }
+    document.getElementById('loader').style.display='none';
+    carregar();
+  }catch(err){
+    console.error("Erro auth", err);
+    document.getElementById('loader').innerHTML=`<p style="text-align:center">Erro no login<br><a href="./login.html" style="color:#00e5ff">Voltar pro login</a></p>`;
+  }
+})();
 </script>
 </body>
 </html>
