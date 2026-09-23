@@ -117,10 +117,41 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL="https://ecrpiuhsbhuqcxbbpqfh.supabase.co";
 const SUPABASE_KEY="sb_publishable_I7Hw7KieW3VNFqb9LYrFoQ_tFWWABwl";
 
-// FIX LOOP: sem storage travado, e sem obrigar login se o navegador bloqueou
+// LOGIN VOLTOU - SEM LOOP
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+  auth: {
+    storage: window.localStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false
+  }
 });
+
+try {
+  const { data: { session } } = await supabase.auth.getSession();
+  if(!session){
+    // sem sessão = manda pro login
+    location.href='./login.html';
+  } else {
+    document.getElementById('loader').style.display='none';
+  }
+} catch(e){
+  // Se o navegador bloqueou o storage (Tracking Prevention)
+  // não fica em loop, mostra botão
+  console.warn("Storage bloqueado", e);
+  document.getElementById('loader').innerHTML = `
+    <p style="color:#fff;text-align:center">Seu navegador bloqueou o login.<br>
+    <a href="./login.html" style="color:#00e5ff">Clique aqui para logar</a><br>
+    <small style="opacity:.5">Use Chrome sem aba anônima</small></p>`;
+}
+
+window.supabase=supabase;
+window.logout=async()=>{
+  await supabase.auth.signOut();
+  localStorage.clear();
+  sessionStorage.clear();
+  location.href='./login.html';
+};
 
 window.supabase=supabase;
 window.logout=async()=>{
