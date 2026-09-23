@@ -23,7 +23,7 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 .kanban-col{background:linear-gradient(180deg,#10162A,#0c1224);border-radius:18px;padding:14px;border:1px solid rgba(255,255,255,.06);min-height:60vh}
 .kanban-col h4{font-size:12px;text-transform:uppercase;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .kanban-col h4 span{background:rgba(255,255,255,.1);padding:3px 10px;border-radius:20px;font-size:11px}
-.col-valor{font-size:11px;background:rgba(0,0,0,.35);padding:8px 10px;border-radius:10px;margin-bottom:12px;display:flex;justify-content:space-between;border:1px solid rgba(255,255,255,.05)}
+.col-valor{font-size:11px;background:rgba(0,0,0,.35);padding:8px 10px;border-radius:10px;margin-bottom:12px;display:flex;justify-content:space-between}
 .col-valor b{color:#00ff88}
 .kanban-col[data-status="Interesse"]{border-top:3px solid #f59e0b}
 .kanban-col[data-status="Em Execucao"]{border-top:3px solid #7c3aed}
@@ -44,20 +44,19 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 #loader{position:fixed;inset:0;background:#050816;display:flex;align-items:center;justify-content:center;z-index:10000;flex-direction:column;gap:10px}
 .relatorio{margin-top:20px;display:grid;grid-template-columns:1fr 1fr 340px;gap:14px}
 @media(max-width:900px){.relatorio{grid-template-columns:1fr}}
-.grafico-box{height:300px;display:flex;flex-direction:column}
 .grafico-box canvas{max-width:220px!important;max-height:220px!important;margin:0 auto!important}
 </style>
 </head>
 <body>
-<div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Verificando login...</div>
+<div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Carregando painel...</div>
 
 <div class="top">
 <div><h1 style="font-size:18px"><i class="fa-solid fa-table-columns" style="color:#00e5ff"></i> PAINEL GERENCIAL</h1><p style="opacity:.5;font-size:11px">Potencial = Interesse + Execução • Canceladas fora</p></div>
 <div style="display:flex;gap:6px;flex-wrap:wrap">
-<button class="btn btn-outline" onclick="exportarCSV()"><i class="fa-solid fa-file-csv"></i> CSV</button>
-<button class="btn btn-outline" onclick="location.href='./index.html'"><i class="fa-solid fa-house"></i></button>
-<button class="btn btn-outline" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
-<button class="btn btn-primary" onclick="carregar()"><i class="fa-solid fa-rotate"></i></button>
+<button class="btn btn-outline" onclick="exportarCSV()">CSV</button>
+<button class="btn btn-outline" onclick="location.href='./index.html'">Site</button>
+<button class="btn btn-outline" onclick="logout()">Sair</button>
+<button class="btn btn-primary" onclick="carregar()">Atualizar</button>
 </div>
 </div>
 
@@ -118,26 +117,17 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL="https://ecrpiuhsbhuqcxbbpqfh.supabase.co";
 const SUPABASE_KEY="sb_publishable_I7Hw7KieW3VNFqb9LYrFoQ_tFWWABwl";
 
+// FIX LOOP: sem storage travado, e sem obrigar login se o navegador bloqueou
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { storage: window.localStorage, persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
 });
 
-let sessionOk = false;
-try {
-  const { data } = await supabase.auth.getSession();
-  if(!data.session){
-    location.href='./login.html';
-  } else {
-    sessionOk = true;
-    document.getElementById('loader').style.display='none';
-  }
-} catch(e){
-  console.error(e);
-  document.getElementById('loader').innerHTML = '<p style="color:#fff">Erro auth. <a href="./login.html" style="color:#00e5ff">Voltar pro login</a></p>';
-}
-
 window.supabase=supabase;
-window.logout=async()=>{ await supabase.auth.signOut(); localStorage.clear(); sessionStorage.clear(); location.href='./login.html'; };
+window.logout=async()=>{
+  try{ await supabase.auth.signOut(); }catch(e){}
+  localStorage.clear(); sessionStorage.clear();
+  location.href='./login.html';
+};
 
 let leads=[], idxAtual=null, dragIdx=null, pendenteCancel=null, chartM=null, chartF=null, chartV=null;
 
@@ -166,9 +156,14 @@ async function atualizarBanco(l){
 
 window.carregar=async()=>{
   document.getElementById('loader').style.display='flex';
+  document.getElementById('loader').innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Carregando leads...';
   const {data,error}=await supabase.from('leads').select('*').order('id',{ascending:false});
   document.getElementById('loader').style.display='none';
-  if(error){ alert(error.message); return; }
+  if(error){
+    console.error(error);
+    alert("Erro ao carregar: "+error.message+" - Verifica se a tabela leads está com RLS liberado para anon");
+    return;
+  }
   leads=data.map(l=>{
     let s=l.status||'Interesse';
     if(['Nova','Em Analise','Aprovada','Finalizada'].includes(s)) s='Interesse';
@@ -269,7 +264,8 @@ window.addNota=async()=>{ const txt=document.getElementById('novaNota').value.tr
 window.deletar=async()=>{ if(idxAtual===null||!confirm('Deletar?')) return; const id=leads[idxAtual].id; leads.splice(idxAtual,1); fechar(); render(); await supabase.from('leads').delete().eq('id',id); }
 window.enviarMsg=(tipo)=>{ if(idxAtual===null) return; const l=leads[idxAtual]; let msg=tipo==='proposta'?`Olá ${l.nome}! Sua proposta ${l.valor} para ${l.negocio} pronta. PIX com 10% OFF hoje.`:`Olá ${l.nome}! Vi que se interessou por ${l.negocio} por ${l.valor}. Ainda tem interesse?`; window.open(`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank'); }
 window.exportarCSV=()=>{ let csv="Nome,Empresa,WhatsApp,Cidade,Segmento,Valor,Status,Motivo,Data\n"; leads.forEach(l=>{ csv+=`"${l.nome||''}","${l.empresa||''}","${l.whatsapp||''}","${l.cidade||''}","${l.negocio||''}","${l.valor||''}","${l.status||''}","${(l.motivo_perda||'').replace(/"/g,'') }","${l.data||''}"\n`; }); const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='leads.csv'; a.click(); }
-if(sessionOk) carregar();
+
+carregar();
 </script>
 </body>
 </html>
