@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DA Software - PAINEL</title>
+<title>DA Software - Painel Gerencial</title>
 <link rel="icon" type="image/png" href="./assets/logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -51,10 +51,16 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 <div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Verificando login...</div>
 
 <div class="top">
-<div><h1 style="font-size:18px"><i class="fa-solid fa-table-columns" style="color:#00e5ff"></i> PAINEL GERENCIAL</h1><p style="opacity:.5;font-size:11px">Potencial = Interesse + Execução • Canceladas fora</p></div>
+<div style="display:flex;align-items:center;gap:12px">
+  <img src="./assets/logo.png" alt="Software" style="height:42px;width:auto;object-fit:contain">
+  <div>
+    <h1 style="font-size:18px;line-height:1">PAINEL GERENCIAL</h1>
+    <p style="opacity:.5;font-size:11px">Acesso restrito somente ao Desenvolvedor - Dionnes</p>
+  </div>
+</div>
 <div style="display:flex;gap:6px;flex-wrap:wrap">
-<button class="btn btn-outline" onclick="exportarCSV()">CSV</button>
-<button class="btn btn-outline" onclick="location.href='./index.html'">Site</button>
+<button class="btn btn-outline" onclick="exportarCSV()">Exportar Dados</button>
+<button class="btn btn-outline" onclick="location.href='./index.html'">Página Inicial</button>
 <button class="btn btn-outline" onclick="logout()">Sair</button>
 <button class="btn btn-primary" onclick="carregar()">Atualizar</button>
 </div>
@@ -78,7 +84,7 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 <div class="kanban" id="kanbanBoard"></div>
 
 <div class="relatorio">
-  <div class="card"><h4 style="font-size:11px;margin-bottom:8px">FUNIL POR QTD</h4><canvas id="chartFunil" height="200"></canvas></div>
+  <div class="card"><h4 style="font-size:11px;margin-bottom:8px">QUANTIDADE</h4><canvas id="chartFunil" height="200"></canvas></div>
   <div class="card"><h4 style="font-size:11px;margin-bottom:8px">VALOR POR COLUNA</h4><canvas id="chartValor" height="200"></canvas></div>
   <div class="card grafico-box"><h4 style="font-size:11px;margin-bottom:8px">MOTIVOS DE PERDA</h4><canvas id="chartMotivos"></canvas><div id="listaMotivos" style="width:100%;margin-top:12px;font-size:11px"></div></div>
 </div>
@@ -95,7 +101,7 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 </div>
 <div style="margin-top:10px"><small>Escopo</small><div id="mEscopo" style="font-size:11px;background:#0a0e1f;padding:10px;border-radius:10px;margin-top:4px;white-space:pre-wrap"></div></div>
 <hr style="margin:12px 0;border-color:rgba(255,255,255,.1)">
-<select id="mStatus" onchange="trocarStatus()"><option>Interesse</option><option>Em Execucao</option><option>Entregue</option><option>Canceladas</option></select>
+<select id="mStatus" onchange="trocarStatus()"><option>Novos Orçamentos</option><option>Em Desenvolvimento</option><option>Entregue</option><option>Canceladas</option></select>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="mProx" type="date" onchange="salvar()"><input id="mCusto" type="number" placeholder="Custo R$" onchange="salvar()"></div>
 <input id="mMotivo" placeholder="Motivo" onchange="salvar()">
 <div id="listaNotas" style="margin-top:10px"></div>
