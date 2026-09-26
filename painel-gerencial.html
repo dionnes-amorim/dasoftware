@@ -199,7 +199,7 @@ window.render=()=>{
   document.getElementById('statHoje').innerText=hoje+' hoje';
   document.getElementById('statPerdido').innerText=perdido.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})+' perdido';
   document.getElementById('statTicket').innerText='Ticket '+ticket.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-  const colunas=['Interesse','Em Execucao','Entregue','Canceladas'];
+  const colunas=['Novas Solicitações','Em Desenvolvimento','Entregues','Canceladas'];
   let html='';
   colunas.forEach(col=>{
     let itens=f.filter(l=>l.status===col);
