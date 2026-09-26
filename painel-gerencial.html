@@ -25,8 +25,8 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 .kanban-col h4 span{background:rgba(255,255,255,.1);padding:3px 10px;border-radius:20px;font-size:11px}
 .col-valor{font-size:11px;background:rgba(0,0,0,.35);padding:8px 10px;border-radius:10px;margin-bottom:12px;display:flex;justify-content:space-between}
 .col-valor b{color:#00ff88}
-.kanban-col[data-status="Interesse"]{border-top:3px solid #f59e0b}
-.kanban-col[data-status="Em Execucao"]{border-top:3px solid #7c3aed}
+.kanban-col[data-status="Novas Solicitações"]{border-top:3px solid #f59e0b}
+.kanban-col[data-status="Em Desenvolvimento"]{border-top:3px solid #7c3aed}
 .kanban-col[data-status="Entregue"]{border-top:3px solid #10b981}
 .kanban-col[data-status="Canceladas"]{border-top:3px solid #ef4444}
 .kanban-card{background:#172033;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;margin-bottom:10px;cursor:grab;transition:.2s}
@@ -68,7 +68,7 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px">
 <div class="card"><h3 id="totalLeads">0</h3><small style="opacity:.5">Total</small><div style="font-size:10px;opacity:.4" id="statHoje">0 hoje</div></div>
-<div class="card"><h3 id="totalValor" style="color:#00e5ff">R$ 0</h3><small style="opacity:.5">Potencial (sem canceladas)</small></div>
+<div class="card"><h3 id="totalValor" style="color:#00e5ff">R$ 0</h3><small style="opacity:.5">Potencial de Ganhos</small></div>
 <div class="card"><h3 id="totalLucro" style="color:#10b981">R$ 0</h3><small style="opacity:.5">Lucro Entregues</small><div style="font-size:10px;opacity:.4" id="statTicket">Ticket R$ 0</div></div>
 <div class="card"><h3 id="totalConversao">0%</h3><small style="opacity:.5">Conversão</small></div>
 <div class="card"><h3 id="totalCancel" style="color:#ef4444">0</h3><small style="opacity:.5">Canceladas</small><div style="font-size:10px;opacity:.4" id="statPerdido">R$ 0 perdido</div></div>
