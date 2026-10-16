@@ -27,7 +27,7 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 .col-valor b{color:#00ff88}
 .kanban-col[data-status="Novas Solicitações"]{border-top:3px solid #f59e0b}
 .kanban-col[data-status="Em Desenvolvimento"]{border-top:3px solid #7c3aed}
-.kanban-col[data-status="Entregue"]{border-top:3px solid #10b981}
+.kanban-col[data-status="Entregues"]{border-top:3px solid #10b981}
 .kanban-col[data-status="Canceladas"]{border-top:3px solid #ef4444}
 .kanban-card{background:#172033;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;margin-bottom:10px;cursor:grab;transition:.2s}
 .kanban-card:hover{transform:translateY(-3px);border-color:#00e5ff}
@@ -77,7 +77,7 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 <div class="search-bar">
 <input id="busca" placeholder="Buscar nome, empresa, zap..." oninput="render()">
 <select id="filtroTempo" onchange="render()" style="background:#10162A;border:1px solid rgba(255,255,255,.1);color:#fff;padding:11px;border-radius:10px;font-size:12px">
-<option value="todos">Todos</option><option value="hoje">Hoje</option><option value="semana">Esta semana</option><option value="interesse">Só Interesse</option>
+<option value="todos">Todos</option><option value="hoje">Hoje</option><option value="semana">Esta semana</option><option value="interesse">Só Novas Solicitações</option>
 </select>
 </div>
 
@@ -101,7 +101,12 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 </div>
 <div style="margin-top:10px"><small>Escopo</small><div id="mEscopo" style="font-size:11px;background:#0a0e1f;padding:10px;border-radius:10px;margin-top:4px;white-space:pre-wrap"></div></div>
 <hr style="margin:12px 0;border-color:rgba(255,255,255,.1)">
-<select id="mStatus" onchange="trocarStatus()"><option>Novos Orçamentos</option><option>Em Desenvolvimento</option><option>Entregue</option><option>Canceladas</option></select>
+<select id="mStatus" onchange="trocarStatus()">
+<option>Novas Solicitações</option>
+<option>Em Desenvolvimento</option>
+<option>Entregues</option>
+<option>Canceladas</option>
+</select>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="mProx" type="date" onchange="salvar()"><input id="mCusto" type="number" placeholder="Custo R$" onchange="salvar()"></div>
 <input id="mMotivo" placeholder="Motivo" onchange="salvar()">
 <div id="listaNotas" style="margin-top:10px"></div>
@@ -122,11 +127,9 @@ body{background:#050816;color:#fff;padding:16px 16px 120px;overflow-x:hidden}
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 const SUPABASE_URL="https://ecrpiuhsbhuqcxbbpqfh.supabase.co";
 const SUPABASE_KEY="sb_publishable_I7Hw7KieW3VNFqb9LYrFoQ_tFWWABwl";
-
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { storage: window.localStorage, persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
 });
-
 window.supabase = supabase;
 window.logout = async () => {
   await supabase.auth.signOut();
@@ -134,7 +137,6 @@ window.logout = async () => {
   sessionStorage.clear();
   location.replace('./login.html');
 };
-
 let leads=[], idxAtual=null, dragIdx=null, pendenteCancel=null, chartM=null, chartF=null, chartV=null;
 
 function parseValor(v){
@@ -155,11 +157,19 @@ function diasDesde(dStr){
     return Math.floor((new Date()-d)/(1000*60*60*24));
   }catch(e){return 0}
 }
+function normalizarStatus(s){
+  if(!s) return 'Novas Solicitações';
+  const t = s.toString().trim().toLowerCase();
+  if(['novas solicitações','nova solicitação','novos orçamentos','novo orçamento','interesse','nova','em analise','aprovada','finalizada'].includes(t)) return 'Novas Solicitações';
+  if(['em desenvolvimento','em desenvolvimento','em execução','em execucao'].includes(t)) return 'Em Desenvolvimento';
+  if(['entregues','entregue','entregado'].includes(t)) return 'Entregues';
+  if(['canceladas','cancelada','negada','cancelado'].includes(t)) return 'Canceladas';
+  return 'Novas Solicitações';
+}
 async function atualizarBanco(l){
   const {error}=await supabase.from('leads').update({status:l.status,custo:l.custo||0,prox_contato:l.prox_contato||null,motivo_perda:l.motivo_perda||null,notas:l.notas||[]}).eq('id',l.id);
   if(error) alert(error.message);
 }
-
 window.carregar=async()=>{
   const loader=document.getElementById('loader');
   loader.style.display='flex';
@@ -168,29 +178,25 @@ window.carregar=async()=>{
   loader.style.display='none';
   if(error){ alert("Erro: "+error.message); return; }
   leads=data.map(l=>{
-    let s=l.status||'Interesse';
-    if(['Nova','Em Analise','Aprovada','Finalizada'].includes(s)) s='Interesse';
-    if(s==='Negada') s='Canceladas';
-    return {...l, status:s, notas:l.notas||[], custo:l.custo||0, motivoPerda:l.motivo_perda||''};
+    return {...l, status: normalizarStatus(l.status), notas:l.notas||[], custo:l.custo||0, motivoPerda:l.motivo_perda||''};
   });
   render();
 }
-
 window.render=()=>{
   const busca=(document.getElementById('busca').value||'').toLowerCase();
   const filtro=document.getElementById('filtroTempo').value;
   let f=leads.filter(l=> (`${l.nome||''} ${l.empresa||''} ${l.whatsapp||''} ${l.cidade||''} ${l.negocio||''}`).toLowerCase().includes(busca));
   if(filtro==='hoje') f=f.filter(l=> (l.data||'').includes(new Date().toLocaleDateString('pt-BR')));
   if(filtro==='semana') f=f.filter(l=> diasDesde(l.data)<=7);
-  if(filtro==='interesse') f=f.filter(l=> l.status==='Interesse');
-  const potencial = f.filter(l=> l.status==='Novos Orçamentos');
+  if(filtro==='interesse') f=f.filter(l=> l.status==='Novas Solicitações');
+  const potencial = f.filter(l=> l.status==='Novas Solicitações');
   const potencialValor = potencial.reduce((a,l)=>a+parseValor(l.valor),0);
-  const lucro = f.filter(l=>l.status==='Entregue').reduce((a,l)=>a+(parseValor(l.valor)-(Number(l.custo)||0)),0);
+  const lucro = f.filter(l=>l.status==='Entregues').reduce((a,l)=>a+(parseValor(l.valor)-(Number(l.custo)||0)),0);
   const canceladas = f.filter(l=>l.status==='Canceladas');
   const perdido = canceladas.reduce((a,l)=>a+parseValor(l.valor),0);
   const hoje = leads.filter(l=> (l.data||'').includes(new Date().toLocaleDateString('pt-BR'))).length;
-  const conv = f.length? Math.round((f.filter(l=>l.status==='Entregue').length / f.length)*100):0;
-  const ticket = f.filter(l=>l.status==='Entregue').length? (f.filter(l=>l.status==='Entregue').reduce((a,l)=>a+parseValor(l.valor),0) / f.filter(l=>l.status==='Entregue').length):0;
+  const conv = f.length? Math.round((f.filter(l=>l.status==='Entregues').length / f.length)*100):0;
+  const ticket = f.filter(l=>l.status==='Entregues').length? (f.filter(l=>l.status==='Entregues').reduce((a,l)=>a+parseValor(l.valor),0) / f.filter(l=>l.status==='Entregues').length):0;
   document.getElementById('totalLeads').innerText=f.length;
   document.getElementById('totalValor').innerText=potencialValor.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   document.getElementById('totalLucro').innerText=lucro.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -199,13 +205,12 @@ window.render=()=>{
   document.getElementById('statHoje').innerText=hoje+' hoje';
   document.getElementById('statPerdido').innerText=perdido.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})+' perdido';
   document.getElementById('statTicket').innerText='Ticket '+ticket.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-  const colunas=['Novos Orçamentos','Em Desenvolvimento','Entregue','Canceladas'];
+  const colunas=['Novas Solicitações','Em Desenvolvimento','Entregues','Canceladas'];
   let html='';
   colunas.forEach(col=>{
     let itens=f.filter(l=>l.status===col);
     let soma=itens.reduce((a,l)=>a+parseValor(l.valor),0);
-    const label = col==='Em Execucao'? 'Em Execução' : col;
-    html+=`<div class="kanban-col" data-status="${col}" ondrop="drop(event)" ondragover="event.preventDefault()"><h4>${label} <span>${itens.length}</span></h4><div class="col-valor"><span>Total coluna</span><b>${soma.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</b></div>`;
+    html+=`<div class="kanban-col" data-status="${col}" ondrop="drop(event)" ondragover="event.preventDefault()"><h4>${col} <span>${itens.length}</span></h4><div class="col-valor"><span>Total coluna</span><b>${soma.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</b></div>`;
     itens.forEach(l=>{
       const idx=leads.findIndex(x=>x.id===l.id);
       const dias=diasDesde(l.data);
@@ -220,16 +225,15 @@ window.render=()=>{
   canceladas.forEach(l=>{ const m=(l.motivo_perda||'Sem motivo').split(' - ')[0]; motivosCount[m]=(motivosCount[m]||0)+1; });
   const ctxF = document.getElementById('chartFunil');
   if(chartF) chartF.destroy();
-  chartF = new Chart(ctxF, { type: 'bar', data: { labels: ['Novos Orçamentos','Em Desenvolvimento','Entregue','Canceladas'], datasets: [{ label: 'Qtd', data: porCol, backgroundColor: ['#f59e0b','#7c3aed','#10b981','#ef4444'] }] }, options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{color:'#fff'}},x:{ticks:{color:'#fff'}}} } });
+  chartF = new Chart(ctxF, { type: 'bar', data: { labels: colunas, datasets: [{ label: 'Qtd', data: porCol, backgroundColor: ['#f59e0b','#7c3aed','#10b981','#ef4444'] }] }, options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{color:'#fff'}},x:{ticks:{color:'#fff',font:{size:8}}}} } });
   const ctxV = document.getElementById('chartValor');
   if(chartV) chartV.destroy();
-  chartV = new Chart(ctxV, { type: 'bar', data: { labels: ['Novos Orçamentos','Em Desenvolvimento','Entregue','Canceladas'], datasets: [{ label: 'R$', data: valorPorCol, backgroundColor: ['#f59e0b','#7c3aed','#10b981','#ef4444'] }] }, options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{color:'#fff'}},x:{ticks:{color:'#fff'}}} } });
+  chartV = new Chart(ctxV, { type: 'bar', data: { labels: colunas, datasets: [{ label: 'R$', data: valorPorCol, backgroundColor: ['#f59e0b','#7c3aed','#10b981','#ef4444'] }] }, options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{color:'#fff'}},x:{ticks:{color:'#fff',font:{size:8}}}} } });
   const ctxM = document.getElementById('chartMotivos');
   if(chartM) chartM.destroy();
   chartM = new Chart(ctxM, { type: 'doughnut', data: { labels: Object.keys(motivosCount), datasets: [{ data: Object.values(motivosCount), backgroundColor: ['#ef4444','#f59e0b','#7c3aed','#00e5ff','#10b981','#fff'] }] }, options: { plugins:{legend:{labels:{color:'#fff',boxWidth:10,font:{size:10}}}} } });
   document.getElementById('listaMotivos').innerHTML = Object.entries(motivosCount).map(([k,v])=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.06);padding:4px 0"><span>${k}</span><b>${v}</b></div>`).join('') || '<div style="opacity:.4">Sem canceladas</div>';
 }
-
 window.drag=(e,idx)=>{ dragIdx=idx; e.target.classList.add('dragging'); document.getElementById('zonaDeletar').classList.add('show'); }
 window.dragEnd=()=>{ document.getElementById('zonaDeletar').classList.remove('show'); document.querySelectorAll('.kanban-card').forEach(c=>c.classList.remove('dragging')); }
 window.drop=async(e)=>{ e.preventDefault(); const novo=e.currentTarget.dataset.status; if(dragIdx===null) return; if(novo==='Canceladas'){ pendenteCancel=dragIdx; document.getElementById('modalMotivo').classList.add('show'); return; } leads[dragIdx].status=novo; render(); await atualizarBanco(leads[dragIdx]); dragEnd(); dragIdx=null; }
@@ -246,15 +250,10 @@ window.addNota=async()=>{ const txt=document.getElementById('novaNota').value.tr
 window.deletar=async()=>{ if(idxAtual===null||!confirm('Deletar?')) return; const id=leads[idxAtual].id; leads.splice(idxAtual,1); fechar(); render(); await supabase.from('leads').delete().eq('id',id); }
 window.enviarMsg=(tipo)=>{ if(idxAtual===null) return; const l=leads[idxAtual]; let msg=tipo==='proposta'?`Olá ${l.nome}! Sua proposta ${l.valor} para ${l.negocio} pronta. PIX com 10% OFF hoje.`:`Olá ${l.nome}! Vi que se interessou por ${l.negocio} por ${l.valor}. Ainda tem interesse?`; window.open(`https://wa.me/55${(l.whatsapp||'').replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank'); }
 window.exportarCSV=()=>{ let csv="Nome,Empresa,WhatsApp,Cidade,Segmento,Valor,Status,Motivo,Data\n"; leads.forEach(l=>{ csv+=`"${l.nome||''}","${l.empresa||''}","${l.whatsapp||''}","${l.cidade||''}","${l.negocio||''}","${l.valor||''}","${l.status||''}","${(l.motivo_perda||'').replace(/"/g,'') }","${l.data||''}"\n`; }); const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='leads.csv'; a.click(); }
-
-// INICIALIZAÇÃO CORRETA - SEM LOOP
 (async()=>{
   try{
     const { data: { session } } = await supabase.auth.getSession();
-    if(!session){
-      location.replace('./login.html');
-      return;
-    }
+    if(!session){ location.replace('./login.html'); return; }
     document.getElementById('loader').style.display='none';
     carregar();
   }catch(err){
