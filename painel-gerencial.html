@@ -183,7 +183,7 @@ window.render=()=>{
   if(filtro==='hoje') f=f.filter(l=> (l.data||'').includes(new Date().toLocaleDateString('pt-BR')));
   if(filtro==='semana') f=f.filter(l=> diasDesde(l.data)<=7);
   if(filtro==='interesse') f=f.filter(l=> l.status==='Interesse');
-  const potencial = f.filter(l=> l.status==='Interesse' || l.status==='Em Execucao');
+  const potencial = f.filter(l=> l.status==='Novos Orçamentos');
   const potencialValor = potencial.reduce((a,l)=>a+parseValor(l.valor),0);
   const lucro = f.filter(l=>l.status==='Entregue').reduce((a,l)=>a+(parseValor(l.valor)-(Number(l.custo)||0)),0);
   const canceladas = f.filter(l=>l.status==='Canceladas');
@@ -199,7 +199,7 @@ window.render=()=>{
   document.getElementById('statHoje').innerText=hoje+' hoje';
   document.getElementById('statPerdido').innerText=perdido.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})+' perdido';
   document.getElementById('statTicket').innerText='Ticket '+ticket.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-  const colunas=['Novas Solicitações','Em Desenvolvimento','Entregues','Canceladas'];
+  const colunas=['Novos Orçamentos','Em Desenvolvimento','Entregue','Canceladas'];
   let html='';
   colunas.forEach(col=>{
     let itens=f.filter(l=>l.status===col);
@@ -220,10 +220,10 @@ window.render=()=>{
   canceladas.forEach(l=>{ const m=(l.motivo_perda||'Sem motivo').split(' - ')[0]; motivosCount[m]=(motivosCount[m]||0)+1; });
   const ctxF = document.getElementById('chartFunil');
   if(chartF) chartF.destroy();
-  chartF = new Chart(ctxF, { type: 'bar', data: { labels: ['Interesse','Execução','Entregue','Canceladas'], datasets: [{ label: 'Qtd', data: porCol, backgroundColor: ['#f59e0b','#7c3aed','#10b981','#ef4444'] }] }, options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{color:'#fff'}},x:{ticks:{color:'#fff'}}} } });
+  chartF = new Chart(ctxF, { type: 'bar', data: { labels: ['Novos Orçamentos','Em Desenvolvimento','Entregue','Canceladas'], datasets: [{ label: 'Qtd', data: porCol, backgroundColor: ['#f59e0b','#7c3aed','#10b981','#ef4444'] }] }, options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{color:'#fff'}},x:{ticks:{color:'#fff'}}} } });
   const ctxV = document.getElementById('chartValor');
   if(chartV) chartV.destroy();
-  chartV = new Chart(ctxV, { type: 'bar', data: { labels: ['Interesse','Execução','Entregue','Canceladas'], datasets: [{ label: 'R$', data: valorPorCol, backgroundColor: ['#f59e0b','#7c3aed','#10b981','#ef4444'] }] }, options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{color:'#fff'}},x:{ticks:{color:'#fff'}}} } });
+  chartV = new Chart(ctxV, { type: 'bar', data: { labels: ['Novos Orçamentos','Em Desenvolvimento','Entregue','Canceladas'], datasets: [{ label: 'R$', data: valorPorCol, backgroundColor: ['#f59e0b','#7c3aed','#10b981','#ef4444'] }] }, options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{color:'#fff'}},x:{ticks:{color:'#fff'}}} } });
   const ctxM = document.getElementById('chartMotivos');
   if(chartM) chartM.destroy();
   chartM = new Chart(ctxM, { type: 'doughnut', data: { labels: Object.keys(motivosCount), datasets: [{ data: Object.values(motivosCount), backgroundColor: ['#ef4444','#f59e0b','#7c3aed','#00e5ff','#10b981','#fff'] }] }, options: { plugins:{legend:{labels:{color:'#fff',boxWidth:10,font:{size:10}}}} } });
