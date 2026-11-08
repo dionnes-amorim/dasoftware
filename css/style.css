@@ -108,7 +108,7 @@ body{
 }
 
 /* =========================================
-   CABEÇALHO - AZUL MARINHO
+   CABEÇALHO - GRAFITE AZULADO
 ========================================= */
 
 nav{
@@ -123,15 +123,13 @@ nav{
 
   background:linear-gradient(
     110deg,
-    #203b5c 0%,
-    #29496d 55%,
-    #233f60 100%
+    #384657 0%,
+    #46566a 50%,
+    #39495c 100%
   );
 
-  border-bottom:1px solid rgba(0,229,255,.16);
-
-  box-shadow:0 4px 20px rgba(0,0,0,.16);
-
+  border-bottom:1px solid rgba(255,255,255,.14);
+  box-shadow:0 4px 20px rgba(0,0,0,.15);
   backdrop-filter:blur(15px);
 }
 
@@ -164,8 +162,6 @@ nav{
   transform:scale(1.04);
 }
 
-/* SOMENTE A LOGO */
-
 .logo span{
   display:none!important;
 }
@@ -181,8 +177,8 @@ nav{
   width:40px;
   height:40px;
   border-radius:50%;
-  border:1px solid rgba(255,255,255,.1);
-  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.10);
   color:var(--text);
   cursor:pointer;
 }
@@ -884,8 +880,6 @@ html[data-theme="light"] body{
   background:#f6f7fb!important;
   color:#0a0e1f!important;
 }
-
-/* Cabeçalho claro preservado */
 
 html[data-theme="light"] nav{
   background:rgba(255,255,255,.98)!important;
