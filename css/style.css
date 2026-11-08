@@ -11,26 +11,24 @@ body{background:var(--bg);color:var(--text);overflow-x:hidden;transition:.3s}
 
 /* ===== CABEÇALHO MENOR + LOGO GIGANTE ===== */
 nav{
-  position:fixed;top:0;left:0;width:100%;
-  height:64px; /* cabeçalho fininho */
+  height:72px; /* cabeçalho um pouco mais alto pra caber a logo */
   padding:0 8%;
   display:flex;justify-content:space-between;align-items:center;
-  backdrop-filter:blur(20px);background:rgba(5,8,22,.75);
-  border-bottom:1px solid rgba(255,255,255,.06);
-  z-index:999; overflow:visible;
+  overflow:hidden; /* nada pra fora */
 }
+
 .logo{
-  display:flex;align-items:center;gap:0;
-  height:64px; overflow:visible; position:relative; z-index:2;
+  display:flex;align-items:center;gap:8px;
+  height:72px; overflow:hidden;
 }
-/* LOGO BEM GRANDE - estoura o cabeçalho sem aumentar ele */
+
 .logo img{
-  width:160px;height:160px;
+  width:auto; height:56px; /* cabe dentro dos 72px com folga */
   object-fit:contain;
-  border-radius:18px;
+  border-radius:0;
   display:block;
-  margin-top:38px; /* quanto maior a logo, maior esse número pra centralizar */
-  filter:drop-shadow(0 8px 20px rgba(0,229,255,.25));
+  margin-top:0; /* zera o margin que fazia estourar */
+  filter:none;
 }
 .logo img:hover{transform:scale(1.03)}
 .logo span{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:800;letter-spacing:1px;color:#fff;margin-left:-8px;transition:.3s;white-space:nowrap}
