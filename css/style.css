@@ -25,14 +25,12 @@ nav{
 }
 /* LOGO BEM GRANDE - estoura o cabeçalho sem aumentar ele */
 .logo img{
-  width:118px;height:118px;
+  width:160px;height:160px;
   object-fit:contain;
   border-radius:18px;
   display:block;
-  /* sobe um pouco pra centralizar visualmente */
-  margin-top:18px;
+  margin-top:38px; /* quanto maior a logo, maior esse número pra centralizar */
   filter:drop-shadow(0 8px 20px rgba(0,229,255,.25));
-  transition:.3s;
 }
 .logo img:hover{transform:scale(1.03)}
 .logo span{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:800;letter-spacing:1px;color:#fff;margin-left:-8px;transition:.3s;white-space:nowrap}
@@ -94,7 +92,7 @@ footer{text-align:center;padding:40px;opacity:.5;font-size:13px}
 /* Celular - logo ainda grande mas sem quebrar */
 @media(max-width:600px){
   nav{height:58px;padding:0 5%}
-  .logo img{width:92px;height:92px;margin-top:14px}
+  .logo img{width:120px;height:120px;margin-top:28px}
   .logo span{font-size:19px}
 }
 html[data-theme="light"]{ --bg:#f6f7fb; --card:#ffffff; --card2:#ffffff; --text:#0a0e1f; }
