@@ -108,7 +108,7 @@ body{
 }
 
 /* =========================================
-   CABEÇALHO - LOGO CENTRALIZADA E AJUSTADA
+   CABEÇALHO - AZUL MARINHO
 ========================================= */
 
 nav{
@@ -120,8 +120,18 @@ nav{
   position:relative;
   z-index:100;
   overflow:hidden;
-  background:rgba(16,24,39,.88);
-  border-bottom:1px solid rgba(255,255,255,.06);
+
+  background:linear-gradient(
+    110deg,
+    #203b5c 0%,
+    #29496d 55%,
+    #233f60 100%
+  );
+
+  border-bottom:1px solid rgba(0,229,255,.16);
+
+  box-shadow:0 4px 20px rgba(0,0,0,.16);
+
   backdrop-filter:blur(15px);
 }
 
@@ -154,7 +164,8 @@ nav{
   transform:scale(1.04);
 }
 
-/* Remove o nome do software, mantendo apenas a logo */
+/* SOMENTE A LOGO */
+
 .logo span{
   display:none!important;
 }
@@ -802,7 +813,7 @@ footer{
   .faq h2{font-size:32px}
 }
 
-/* CELULAR - LOGO DENTRO DO CABEÇALHO */
+/* CELULAR */
 
 @media(max-width:600px){
 
@@ -832,9 +843,7 @@ footer{
     display:none!important;
   }
 
-  .nav-actions{
-    gap:8px;
-  }
+  .nav-actions{gap:8px}
 
   .theme-btn{
     width:36px;
@@ -846,7 +855,6 @@ footer{
   }
 
   .hero h1{font-size:34px}
-
   .hero p{font-size:16px}
 
   .segmentos,
@@ -877,9 +885,12 @@ html[data-theme="light"] body{
   color:#0a0e1f!important;
 }
 
+/* Cabeçalho claro preservado */
+
 html[data-theme="light"] nav{
   background:rgba(255,255,255,.98)!important;
   border-bottom:1px solid rgba(0,0,0,.08)!important;
+  box-shadow:0 4px 20px rgba(0,0,0,.04);
 }
 
 html[data-theme="light"] nav .logo span,
