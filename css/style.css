@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap');
 
 :root{
@@ -108,7 +107,8 @@ body{
 }
 
 /* =========================================
-   CABEÇALHO - GRAFITE AZULADO
+   CABEÇALHO - CORRIGIDO PARA CASAR COM A LOGO DL
+   Logo tem fundo PRETO PURO, então header tem que ser PRETO PURO
 ========================================= */
 
 nav{
@@ -121,15 +121,18 @@ nav{
   z-index:100;
   overflow:hidden;
 
-  background:linear-gradient(
-    110deg,
-    #384657 0%,
-    #46566a 50%,
-    #39495c 100%
-  );
+  /* CORREÇÃO: Preto puro igual ao fundo da logo */
+  background:#000000;
+  /* Glow sutil azul/rosa da logo nas laterais */
+  background-image:
+    radial-gradient(circle at 0% 50%, rgba(0,229,255,.18), transparent 35%),
+    radial-gradient(circle at 100% 50%, rgba(255,90,180,.14), transparent 35%),
+    linear-gradient(90deg, #000000 0%, #05060a 50%, #000000 100%);
 
-  border-bottom:1px solid rgba(255,255,255,.14);
-  box-shadow:0 4px 20px rgba(0,0,0,.15);
+  /* Linha inferior em degradê azul -> rosa igual a logo */
+  border-bottom:1px solid transparent;
+  border-image:linear-gradient(90deg, #00e5ff, #7b61ff, #ff5aa8) 1;
+  box-shadow:0 4px 24px rgba(0,0,0,.6), 0 1px 0 rgba(0,229,255,.15);
   backdrop-filter:blur(15px);
 }
 
@@ -141,6 +144,8 @@ nav{
   max-height:78px;
   overflow:hidden;
   flex-shrink:0;
+  /* Fundo preto para a logo não ficar com quadrado visível */
+  background:#000000;
 }
 
 .logo img{
@@ -154,6 +159,8 @@ nav{
   border-radius:0;
   margin:0;
   padding:0;
+  /* Garante que a imagem se funde com o header */
+  background:#000000;
   filter:none;
   transition:transform .3s ease;
 }
@@ -818,12 +825,14 @@ footer{
     min-height:66px;
     padding:0 5%;
     overflow:hidden;
+    background:#000000;
   }
 
   .logo{
     height:66px;
     max-height:66px;
     overflow:hidden;
+    background:#000000;
   }
 
   .logo img{
@@ -833,6 +842,7 @@ footer{
     max-width:145px;
     margin:0;
     object-fit:contain;
+    background:#000000;
   }
 
   .logo span{
@@ -866,7 +876,7 @@ footer{
 }
 
 /* =========================================
-   MODO CLARO
+   MODO CLARO - CABEÇALHO CONTINUA PRETO PARA CASAR COM A LOGO
 ========================================= */
 
 html[data-theme="light"]{
@@ -881,10 +891,21 @@ html[data-theme="light"] body{
   color:#0a0e1f!important;
 }
 
+/* CORREÇÃO IMPORTANTE: No modo claro o nav NÃO fica branco, senão a logo com fundo preto fica com quadrado */
 html[data-theme="light"] nav{
-  background:rgba(255,255,255,.98)!important;
-  border-bottom:1px solid rgba(0,0,0,.08)!important;
-  box-shadow:0 4px 20px rgba(0,0,0,.04);
+  background:#000000!important;
+  background-image:
+    radial-gradient(circle at 0% 50%, rgba(0,229,255,.18), transparent 35%),
+    radial-gradient(circle at 100% 50%, rgba(255,90,180,.14), transparent 35%),
+    linear-gradient(90deg, #000000 0%, #05060a 50%, #000000 100%)!important;
+  border-bottom:1px solid transparent!important;
+  border-image:linear-gradient(90deg, #00e5ff, #7b61ff, #ff5aa8) 1!important;
+  box-shadow:0 4px 24px rgba(0,0,0,.6)!important;
+}
+
+html[data-theme="light"] nav .logo,
+html[data-theme="light"] .logo{
+  background:#000000!important;
 }
 
 html[data-theme="light"] nav .logo span,
